@@ -8,12 +8,12 @@ class YahtzeeTop extends YahtzeeSection {
 
   YahtzeeTop() {
     boxes = <YahtzeeBox>[
-      NumberYahtzeeBox(1),
-      NumberYahtzeeBox(2),
-      NumberYahtzeeBox(3),
-      NumberYahtzeeBox(4),
-      NumberYahtzeeBox(5),
-      NumberYahtzeeBox(6),
+      NumberYahtzeeBox(1, 'Ones'),
+      NumberYahtzeeBox(2, 'Twos'),
+      NumberYahtzeeBox(3, 'Threes'),
+      NumberYahtzeeBox(4, 'Fours'),
+      NumberYahtzeeBox(5, 'Fives'),
+      NumberYahtzeeBox(6, 'Sixes'),
     ];
   }
 

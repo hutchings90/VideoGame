@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:playing_around/src/games/Die.dart';
+import 'package:playing_around/src/games/Yahtzee.dart';
+import 'package:playing_around/src/games/YahtzeeBox.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'presets_manager.dart';
@@ -17,7 +20,57 @@ class HomeState extends State<HomePage> {
   void initState() {
     setDatabase();
 
+    startYahtzeeGame('Player 1');
+    // startYahtzeeGame('Player 2');
+    // startYahtzeeGame('Player 3');
+    // startYahtzeeGame('Player 4');
+    // startYahtzeeGame('Player 5');
+
     super.initState();
+  }
+
+  startYahtzeeGame(String name) {
+    Yahtzee(
+      onRollSuccess: (YahtzeeBox yahtzeeBox) => onRollSuccess(name, yahtzeeBox),
+      onTurnSuccess: (YahtzeeBox yahtzeeBox) => onTurnSuccess(name, yahtzeeBox),
+      onYahtzee: (YahtzeeBox yahtzeeBox) => onYahtzee(name, yahtzeeBox),
+      onBonusYahtzee: (YahtzeeBox yahtzeeBox) => onBonusYahtzee(name, yahtzeeBox),
+      onRollFail: (List<Die> dice) => onRollFail(name, dice),
+      onTurnFail: (List<Die> dice) => onTurnFail(name, dice),
+      onGameEnd: (List<Die> dice) => onGameEnd(name, dice),
+    ).play();
+  }
+
+  onRollSuccess(String name, YahtzeeBox yahtzeeBox) {
+    turnReport(name, 'Roll Success: ' + yahtzeeBox.toString());
+  }
+
+  onTurnSuccess(String name, YahtzeeBox yahtzeeBox) {
+    turnReport(name, 'Turn Success: ' + yahtzeeBox.toString());
+  }
+
+  onYahtzee(String name, YahtzeeBox yahtzeeBox) {
+    turnReport(name, 'Yahtzee: ' + yahtzeeBox.toString());
+  }
+
+  onBonusYahtzee(String name, YahtzeeBox yahtzeeBox) {
+    turnReport(name, 'Bonus Yahtzee: ' + yahtzeeBox.toString());
+  }
+
+  onRollFail(String name, List<Die> dice) {
+    turnReport(name, 'Roll failed: ' + dice.toString());
+  }
+
+  onTurnFail(String name, List<Die> dice) {
+    turnReport(name, 'Turn failed: ' + dice.toString());
+  }
+
+  onGameEnd(String name, List<Die> dice) {
+    turnReport(name, 'Game Over: ' + dice.toString());
+  }
+
+  turnReport(String name, String report) {
+    print(name + ': ' + report);
   }
 
   @override

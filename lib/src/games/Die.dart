@@ -3,10 +3,13 @@ import 'dart:math';
 final random = new Random();
 
 class Die implements Comparable {
+  static const SIDE_COUNT = 6;
+
   int value;
+  bool picked = false;
 
   Die({ this.value }) {
-    if (value == null) value = random.nextInt(6);
+    if (value == null) roll();
   }
 
   int compareTo(dynamic other) {
@@ -16,5 +19,9 @@ class Die implements Comparable {
   @override
   String toString() {
     return value.toString();
+  }
+
+  roll() {
+    value = random.nextInt(SIDE_COUNT) + 1;
   }
 }

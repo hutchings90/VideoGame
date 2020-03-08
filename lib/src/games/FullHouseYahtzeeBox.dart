@@ -6,6 +6,8 @@ class FullHouseYahtzeeBox extends YahtzeeBox {
 
   int get score => isBonusYahtzee || canUse(myDice) ? SCORE : 0;
 
+  FullHouseYahtzeeBox() : super('Full House');
+
   bool canUse(List<Die> dice) {
     List<int> values = myDice.fold(Map<int, int>(), (Map<int, int> reduction, Die die) {
       reduction.update(

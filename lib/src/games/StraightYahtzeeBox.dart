@@ -4,7 +4,7 @@ import 'package:playing_around/src/games/YahtzeeBox.dart';
 class StraightYahtzeeBox extends YahtzeeBox {
   final int min, potentialScore;
 
-  StraightYahtzeeBox(this.min, this.potentialScore);
+  StraightYahtzeeBox(this.min, this.potentialScore, name) : super(name + ' Straight');
 
   int get score => isBonusYahtzee || canUse(myDice) ? potentialScore : 0;
 

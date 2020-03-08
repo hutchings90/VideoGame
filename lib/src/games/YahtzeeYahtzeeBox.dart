@@ -7,6 +7,8 @@ class YahtzeeYahtzeeBox extends YahtzeeBox {
 
   int get score => canUse(myDice) ? SCORE : 0;
 
+  YahtzeeYahtzeeBox() : super('Yahtzee');
+
   bool canUse(List<Die> dice) {
     return Yahtzee.isYahtzee(dice);
   }

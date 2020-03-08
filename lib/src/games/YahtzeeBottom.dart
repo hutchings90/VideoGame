@@ -1,5 +1,4 @@
 import 'package:playing_around/src/games/ChanceYahtzeeBox.dart';
-import 'package:playing_around/src/games/Die.dart';
 import 'package:playing_around/src/games/FourOfAKindYahtzeeBox.dart';
 import 'package:playing_around/src/games/FullHouseYahtzeeBox.dart';
 import 'package:playing_around/src/games/LargeStraightYahtzeeBox.dart';
