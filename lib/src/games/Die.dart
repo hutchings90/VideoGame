@@ -12,6 +12,11 @@ class Die implements Comparable {
     if (value == null) roll();
   }
 
+  Die.fromDie(Die die) {
+    value = die.value;
+    picked = die.picked;
+  }
+
   int compareTo(dynamic other) {
     return value - other.value;
   }

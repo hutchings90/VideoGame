@@ -17,13 +17,15 @@ class YahtzeeTop extends YahtzeeSection {
     ];
   }
 
-  int get scorePreBonus => boxes.fold(0, (sum, box) => sum + box.score);
+  int get scorePreBonus => super.score;
   bool get getsBonus => scorePreBonus >= BONUS_THRESHOLD;
   int get bonus => getsBonus ? BONUS_VALUE : 0;
+
+  @override
   int get score => scorePreBonus + bonus;
 
   @override
   String toString() {
-    return super.toString() + ', ' + getsBonus.toString();
+    return super.toString() + '\nBonus: ' + (getsBonus ? BONUS_VALUE.toString() : '0');
   }
 }

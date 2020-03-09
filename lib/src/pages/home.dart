@@ -37,7 +37,7 @@ class HomeState extends State<HomePage> {
       onBonusYahtzee: (YahtzeeBox yahtzeeBox) => onBonusYahtzee(name, yahtzeeBox),
       onRollFail: (List<Die> dice) => onRollFail(name, dice),
       onTurnFail: (List<Die> dice) => onTurnFail(name, dice),
-      onGameEnd: (List<Die> dice) => onGameEnd(name, dice),
+      onGameEnd: (Yahtzee yahtzee) => onGameEnd(name, yahtzee),
     ).play();
   }
 
@@ -58,15 +58,15 @@ class HomeState extends State<HomePage> {
   }
 
   onRollFail(String name, List<Die> dice) {
-    turnReport(name, 'Roll failed: ' + dice.toString());
+    turnReport(name, 'Roll Failed: ' + dice.toString());
   }
 
   onTurnFail(String name, List<Die> dice) {
-    turnReport(name, 'Turn failed: ' + dice.toString());
+    turnReport(name, 'Turn Failed: ' + dice.toString());
   }
 
-  onGameEnd(String name, List<Die> dice) {
-    turnReport(name, 'Game Over: ' + dice.toString());
+  onGameEnd(String name, Yahtzee yahtzee) {
+    turnReport(name, 'Game Over: \n' + yahtzee.toString());
   }
 
   turnReport(String name, String report) {

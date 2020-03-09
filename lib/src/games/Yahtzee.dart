@@ -7,34 +7,41 @@ import 'package:playing_around/src/games/YahtzeeTop.dart';
 
 class Yahtzee {
   static const DICE_COUNT = 5;
+  static const int BONUS_YAHTZEE_SCORE = 100;
 
   int turnCount, rollCount;
   bool turnDone;
-  YahtzeeTop top;
-  YahtzeeBottom bottom;
+  YahtzeeTop top = YahtzeeTop();
+  YahtzeeBottom bottom = YahtzeeBottom();
   List<Die> dice = <Die>[Die(), Die(), Die(), Die(), Die()];
 
   final Function(YahtzeeBox yahtzeeBox) onRollSuccess, onTurnSuccess, onYahtzee, onBonusYahtzee;
-  final Function(List<Die> dice) onRollFail, onTurnFail, onGameEnd;
+  final Function(List<Die> dice) onRollFail, onTurnFail;
+  final Function(Yahtzee yahtzee) onGameEnd;
 
-  Yahtzee({this.onRollSuccess, this.onTurnSuccess, this.onYahtzee, this.onBonusYahtzee, this.onRollFail, this.onTurnFail, this.onGameEnd}) {
-    top = YahtzeeTop();
-    bottom = YahtzeeBottom(top);
-  }
+  Yahtzee({this.onRollSuccess, this.onTurnSuccess, this.onYahtzee, this.onBonusYahtzee, this.onRollFail, this.onTurnFail, this.onGameEnd});
 
   int get score => top.score + bottom.score;
   int get _buttonCount => top.boxes.length + bottom.boxes.length;
   List<Die> get _rollableDice => dice.where((Die die) => !die.picked).toList();
   List<Die> get reportDice => List.from(dice);
 
+  List<YahtzeeBox> get allBoxes {
+    List<YahtzeeBox> combined = <YahtzeeBox>[];
+
+    combined.addAll(top.boxes);
+    combined.addAll(bottom.boxes);
+
+    return combined;
+  }
+
+  List<YahtzeeBox> get bonusYahtzeeBoxes => allBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.isBonusYahtzee).toList();
+  List<int> get bonusYahtzeeNumbers => bonusYahtzeeBoxes.map((YahtzeeBox yahtzeeBox) => yahtzeeBox.myDice[0].value).toList();
+  int get bonusYahtzeeCount => bonusYahtzeeBoxes.length;
+  int get bonusYahtzeeScore => BONUS_YAHTZEE_SCORE * bonusYahtzeeCount;
+
   static bool isYahtzee(List<Die> dice) {
-    if (dice.length != DICE_COUNT) return false;
-
-    for (int i = 1; i < dice.length; i++) {
-      if (dice[i].value != dice[i - 1].value) return false;
-    }
-
-    return true;
+    return dice.length == DICE_COUNT && dice.every((Die die) => die.value == dice[0].value);
   }
 
   play() async {
@@ -98,7 +105,19 @@ class Yahtzee {
   }
 
   _endGame() async {
-    if (onGameEnd != null) onGameEnd(reportDice);
+    if (onGameEnd != null) onGameEnd(this);
+  }
+
+  @override
+  String toString() {
+    return <String>[
+      top.toString(),
+      bottom.toString(),
+      'Bonus Yahtzees: ' + bonusYahtzeeScore.toString() + ' ' + bonusYahtzeeNumbers.toString(),
+      'Total of Lower Section: ' + bottom.score.toString(),
+      'Total of Upper Section: ' + top.score.toString(),
+      'Grand Total: ' + score.toString()
+    ].join('\n');
   }
 
   test() {

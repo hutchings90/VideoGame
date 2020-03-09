@@ -8,7 +8,7 @@ abstract class OfAKindYahtzeeBox extends SumYahtzeeBox {
 
   // TODO: This does not seem to be working.
   bool canUse(List<Die> dice) {
-    return null != myDice.fold(Map<int, int>(), (Map<int, int> reduction, Die die) {
+    return null != dice.fold(Map<int, int>(), (Map<int, int> reduction, Die die) {
       reduction.update(
         die.value,
         (existingValue) => existingValue + 1,

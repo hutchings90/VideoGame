@@ -14,7 +14,7 @@ abstract class YahtzeeBox {
   YahtzeeBox(this.name);
 
   use(List<Die> dice, {bool asBonusYahtzee=false}) {
-    myDice = List.from(dice);
+    myDice = dice.map((Die die) => Die.fromDie(die)).toList();
     isBonusYahtzee = asBonusYahtzee;
   }
 
