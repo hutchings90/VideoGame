@@ -23,4 +23,14 @@ class FullHouseYahtzeeBox extends YahtzeeBox {
 
     return (values[0] == 2 && values[1] == 3) || (values[0] == 3 || values[1] == 2);
   }
+
+  List<Die> diceToKeep(List<Die> dice) {
+    // TODO: Implement
+    return dice;
+  }
+
+  List<Die> diceToRoll(List<Die> dice) {
+    // TODO: Implement
+    return dice;
+  }
 }

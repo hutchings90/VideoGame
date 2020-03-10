@@ -8,6 +8,8 @@ abstract class YahtzeeBox {
 
   int get score;
   bool canUse(List<Die> dice);
+  List<Die> diceToKeep(List<Die> dice);
+  List<Die> diceToRoll(List<Die> dice);
 
   bool get used => myDice.length == Yahtzee.DICE_COUNT;
 
@@ -16,6 +18,13 @@ abstract class YahtzeeBox {
   use(List<Die> dice, {bool asBonusYahtzee=false}) {
     myDice = dice.map((Die die) => Die.fromDie(die)).toList();
     isBonusYahtzee = asBonusYahtzee;
+  }
+
+  Map<String, List<Die>> diceFit(List<Die> dice) {
+    return {
+      'keep': diceToKeep(dice),
+      'remove': diceToRoll(dice)
+    };
   }
 
   @override

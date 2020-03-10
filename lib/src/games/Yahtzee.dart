@@ -6,7 +6,7 @@ import 'package:playing_around/src/games/YahtzeeBox.dart';
 import 'package:playing_around/src/games/YahtzeeTop.dart';
 
 class Yahtzee {
-  static const DICE_COUNT = 5;
+  static const int DICE_COUNT = 5;
   static const int BONUS_YAHTZEE_SCORE = 100;
 
   int turnCount, rollCount;

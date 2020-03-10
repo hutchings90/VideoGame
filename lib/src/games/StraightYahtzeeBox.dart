@@ -46,4 +46,14 @@ class StraightYahtzeeBox extends YahtzeeBox {
 
     return values.length;
   }
+
+  List<Die> diceToKeep(List<Die> dice) {
+    // TODO: Implement
+    return dice;
+  }
+
+  List<Die> diceToRoll(List<Die> dice) {
+    // TODO: Implement
+    return dice;
+  }
 }

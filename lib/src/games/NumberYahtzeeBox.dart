@@ -11,4 +11,14 @@ class NumberYahtzeeBox extends YahtzeeBox {
   bool canUse(List<Die> dice) {
     return null != dice.firstWhere((Die die) => die.value == value, orElse: () => null);
   }
+
+  List<Die> diceToKeep(List<Die> dice) {
+    // TODO: Implement
+    return dice;
+  }
+
+  List<Die> diceToRoll(List<Die> dice) {
+    // TODO: Implement
+    return dice;
+  }
 }

@@ -6,7 +6,6 @@ abstract class OfAKindYahtzeeBox extends SumYahtzeeBox {
 
   OfAKindYahtzeeBox(this.min, name) : super(name + ' of a Kind');
 
-  // TODO: This does not seem to be working.
   bool canUse(List<Die> dice) {
     return null != dice.fold(Map<int, int>(), (Map<int, int> reduction, Die die) {
       reduction.update(
@@ -17,5 +16,15 @@ abstract class OfAKindYahtzeeBox extends SumYahtzeeBox {
 
       return reduction;
     }).values.firstWhere((int value) => value >= min, orElse: () => null);
+  }
+
+  List<Die> diceToKeep(List<Die> dice) {
+    // TODO: Implement
+    return dice;
+  }
+
+  List<Die> diceToRoll(List<Die> dice) {
+    // TODO: Implement
+    return dice;
   }
 }

@@ -12,4 +12,14 @@ class YahtzeeYahtzeeBox extends YahtzeeBox {
   bool canUse(List<Die> dice) {
     return Yahtzee.isYahtzee(dice);
   }
+
+  List<Die> diceToKeep(List<Die> dice) {
+    // TODO: Implement
+    return dice;
+  }
+
+  List<Die> diceToRoll(List<Die> dice) {
+    // TODO: Implement
+    return dice;
+  }
 }
