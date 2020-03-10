@@ -13,12 +13,10 @@ class NumberYahtzeeBox extends YahtzeeBox {
   }
 
   List<Die> diceToKeep(List<Die> dice) {
-    // TODO: Implement
-    return dice;
+    return dice.where((Die die) => value == die.value).toList();
   }
 
   List<Die> diceToRoll(List<Die> dice) {
-    // TODO: Implement
-    return dice;
+    return dice.where((Die die) => value != die.value).toList();
   }
 }
