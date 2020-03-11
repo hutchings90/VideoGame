@@ -73,14 +73,12 @@ class Yahtzee {
   }
 
   _endRoll(YahtzeeBox yahtzeeBox) async {
-    if (yahtzeeBox == null) {
-      if (onRollFail != null) onRollFail(reportDice);
-    }
-    else {
+    if (yahtzeeBox != null) {
       turnDone = true;
 
       if (onRollSuccess != null) onRollSuccess(yahtzeeBox);
     }
+    else if (onRollFail != null) onRollFail(reportDice);
 
     if (++rollCount > 3 || turnDone) _endTurn(yahtzeeBox);
     else _nextRoll();
