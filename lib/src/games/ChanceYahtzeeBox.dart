@@ -9,12 +9,10 @@ class ChanceYahtzeeBox extends SumYahtzeeBox {
   }
   
   List<Die> diceToKeep(List<Die> dice) {
-    // TODO: Implement
-    return dice;
+    return dice.where((Die die) => die.value > 3).toList();
   }
   
   List<Die> diceToRoll(List<Die> dice) {
-    // TODO: Implement
-    return dice;
+    return dice.where((Die die) => die.value < 4).toList();
   }
 }
