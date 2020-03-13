@@ -14,12 +14,31 @@ class YahtzeeYahtzeeBox extends YahtzeeBox {
   }
 
   List<Die> diceToKeep(List<Die> dice) {
-    // TODO: Implement
-    return dice;
+    int mostFrequentValue = _mostFrequentDieValue(dice);
+
+    return dice.where((Die die) => die.value == mostFrequentValue).toList();
   }
 
   List<Die> diceToRoll(List<Die> dice) {
-    // TODO: Implement
-    return dice;
+    int mostFrequentValue = _mostFrequentDieValue(dice);
+
+    return dice.where((Die die) => die.value != mostFrequentValue).toList();
+  }
+
+  _mostFrequentDieValue(List<Die> dice) {
+    int mostFrequentValue = 0;
+    Map<int, int> frequencies = Map<int, int>();
+
+    dice.forEach((Die die) {
+      frequencies.update(
+        die.value,
+        (int existing) => existing + 1,
+        ifAbsent: () => 1
+      );
+
+      if (null == frequencies[mostFrequentValue] || frequencies[die.value] > frequencies[mostFrequentValue]) mostFrequentValue = die.value;
+    });
+
+    return mostFrequentValue;
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:playing_around/src/games/Die.dart';
-import 'package:playing_around/src/games/ThreeOfAKindYahtzeeBox.dart';
 import 'package:playing_around/src/games/Yahtzee.dart';
 import 'package:playing_around/src/games/YahtzeeBox.dart';
+import 'package:playing_around/src/games/YahtzeeYahtzeeBox.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'presets_manager.dart';
@@ -21,14 +21,14 @@ class HomeState extends State<HomePage> {
   void initState() {
     setDatabase();
 
-    print(ThreeOfAKindYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1)]));
-    print(ThreeOfAKindYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2)]));
-    print(ThreeOfAKindYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2), Die(value: 2)]));
-    print(ThreeOfAKindYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 2), Die(value: 2), Die(value: 2)]));
-    print(ThreeOfAKindYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 1), Die(value: 1)]));
-    print(ThreeOfAKindYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 3), Die(value: 2), Die(value: 2)]));
-    print(ThreeOfAKindYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 1)]));
-    print(ThreeOfAKindYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 5)]));
+    print(YahtzeeYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1)]));
+    print(YahtzeeYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2)]));
+    print(YahtzeeYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2), Die(value: 2)]));
+    print(YahtzeeYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 2), Die(value: 2), Die(value: 2)]));
+    print(YahtzeeYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 1), Die(value: 1)]));
+    print(YahtzeeYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 3), Die(value: 2), Die(value: 2)]));
+    print(YahtzeeYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 1)]));
+    print(YahtzeeYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 5)]));
 
     // startYahtzeeGame('Player 1');
     // startYahtzeeGame('Player 2');
