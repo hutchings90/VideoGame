@@ -48,12 +48,62 @@ class StraightYahtzeeBox extends YahtzeeBox {
   }
 
   List<Die> diceToKeep(List<Die> dice) {
-    // TODO: Implement
-    return dice;
+    return _processDiceFit(dice, true);
   }
 
   List<Die> diceToRoll(List<Die> dice) {
-    // TODO: Implement
-    return dice;
+    return _processDiceFit(dice, false);
+  }
+
+  List<Die> _processDiceFit(List<Die> dice, bool returnKeepers) {
+    int outerLoopEnd = dice.length - min;
+    List<Die> bestKeepers = <Die>[];
+    List<Die> bestLosers = <Die>[];
+    List<Die> keepers = <Die>[];
+    List<Die> losers = <Die>[];
+
+    dice.sort();
+
+    for (int i = 0; i <= outerLoopEnd && i < dice.length; i++) {
+      Die die = dice[i];
+      int prevValue = die.value;
+      int limit = die.value + min - 1;
+      int innerLoopEnd = limit;
+
+      keepers.add(die);
+
+      if (i > 0) losers.addAll(dice.getRange(0, i));
+
+      for (int j = i + 1; j < innerLoopEnd && j < dice.length; j++) {
+        Die die = dice[j];
+
+        if (die.value == prevValue) {
+          innerLoopEnd++;
+          outerLoopEnd++;
+          losers.add(die);
+        }
+        else if (die.value > limit) losers.add(die);
+        else keepers.add(die);
+
+        prevValue = die.value;
+      }
+
+      if (innerLoopEnd < dice.length) losers.addAll(dice.sublist(innerLoopEnd));
+
+      if (keepers.length > bestKeepers.length) {
+        bestKeepers = keepers;
+        bestLosers = losers;
+      }
+
+      keepers = <Die>[];
+      losers = <Die>[];
+    }
+
+    if (bestKeepers.length >= min) {
+      bestKeepers = dice;
+      bestLosers = <Die>[];
+    }
+
+    return returnKeepers ? bestKeepers : bestLosers;
   }
 }
