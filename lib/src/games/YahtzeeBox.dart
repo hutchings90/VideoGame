@@ -23,7 +23,7 @@ abstract class YahtzeeBox {
   Map<String, List<Die>> diceFit(List<Die> dice) {
     return {
       'keep': diceToKeep(dice),
-      'remove': diceToRoll(dice)
+      'roll': diceToRoll(dice)
     };
   }
 
