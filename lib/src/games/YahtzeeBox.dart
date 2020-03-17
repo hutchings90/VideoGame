@@ -1,5 +1,4 @@
 import 'package:playing_around/src/games/Die.dart';
-import 'package:playing_around/src/games/Yahtzee.dart';
 
 abstract class YahtzeeBox {
   String name = '';
@@ -12,7 +11,7 @@ abstract class YahtzeeBox {
   List<Die> diceToRoll(List<Die> dice);
 
   int get score => diceScore(myDice);
-  bool get used => myDice.length == Yahtzee.DICE_COUNT;
+  bool get used => myDice.length > 0;
 
   YahtzeeBox(this.name);
 

@@ -18,10 +18,17 @@ abstract class YahtzeeSection {
   }
 
   YahtzeeBox mostValuableYahtzeeBox(List<Die> dice) {
-    List<YahtzeeBox> yahtzeeBoxes = usableBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.canUse(dice)).toList();
+    return _yahtzeeBoxByScoreCompare(dice, usableBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.canUse(dice)).toList(), true);
+  }
+
+  YahtzeeBox throwAwayYahtzeeBox(List<Die> dice) {
+    return _yahtzeeBoxByScoreCompare(dice, usableBoxes, false);
+  }
+
+  YahtzeeBox _yahtzeeBoxByScoreCompare(List<Die> dice, List<YahtzeeBox> yahtzeeBoxes, bool greaterThan) {
     YahtzeeBox yahtzeeBox;
 
-    if (yahtzeeBoxes.length > 0) yahtzeeBox = yahtzeeBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) => cur.diceScore(dice) > prev.diceScore(dice) ? cur : prev);
+    if (yahtzeeBoxes.length > 0) yahtzeeBox = yahtzeeBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) => (greaterThan == cur.diceScore(dice) > prev.diceScore(dice)) ? cur : prev);
 
     return yahtzeeBox;
   }

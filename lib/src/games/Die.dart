@@ -6,7 +6,6 @@ class Die implements Comparable {
   static const SIDE_COUNT = 6;
 
   int value;
-  bool picked = false;
 
   Die({ this.value }) {
     if (value == null) roll();
@@ -14,7 +13,6 @@ class Die implements Comparable {
 
   Die.fromDie(Die die) {
     value = die.value;
-    picked = die.picked;
   }
 
   int compareTo(dynamic other) {

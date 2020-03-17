@@ -1,5 +1,4 @@
 import 'package:playing_around/src/games/Die.dart';
-import 'package:playing_around/src/games/Yahtzee.dart';
 import 'package:playing_around/src/games/YahtzeeBox.dart';
 
 class YahtzeeYahtzeeBox extends YahtzeeBox {
@@ -12,7 +11,7 @@ class YahtzeeYahtzeeBox extends YahtzeeBox {
   }
 
   bool canUse(List<Die> dice) {
-    return Yahtzee.isYahtzee(dice);
+    return dice.length > 1 && dice.every((Die die) => die.value == dice[0].value);
   }
 
   List<Die> diceToKeep(List<Die> dice) {

@@ -3,18 +3,20 @@ import 'dart:async';
 import 'package:playing_around/src/games/Die.dart';
 import 'package:playing_around/src/games/YahtzeeBottom.dart';
 import 'package:playing_around/src/games/YahtzeeBox.dart';
-import 'package:playing_around/src/games/YahtzeeSection.dart';
 import 'package:playing_around/src/games/YahtzeeTop.dart';
 
 class Yahtzee {
-  static const int DICE_COUNT = 5;
   static const int BONUS_YAHTZEE_SCORE = 100;
+  static const int ROLL_DELAY = 0;
+  static const int TURN_DELAY = 0;
+  static const int ROLLS_PER_TURN = 3;
 
-  int turnCount, rollCount;
-  bool turnDone;
-  YahtzeeTop top = YahtzeeTop();
-  YahtzeeBottom bottom = YahtzeeBottom();
-  List<Die> dice = <Die>[Die(), Die(), Die(), Die(), Die()];
+  int _turnCount, _rollCount;
+  YahtzeeTop _top = YahtzeeTop();
+  YahtzeeBottom _bottom = YahtzeeBottom();
+  List<Die> _diceToRoll = <Die>[Die(), Die(), Die(), Die(), Die()];
+  List<Die> _diceToKeep = <Die>[];
+  YahtzeeBox _pickedYahtzeeBox;
 
   final Function(YahtzeeBox yahtzeeBox) onRollSuccess, onTurnSuccess, onYahtzee, onBonusYahtzee;
   final Function(List<Die> dice) onRollFail, onTurnFail;
@@ -22,104 +24,122 @@ class Yahtzee {
 
   Yahtzee({this.onRollSuccess, this.onTurnSuccess, this.onYahtzee, this.onBonusYahtzee, this.onRollFail, this.onTurnFail, this.onGameEnd});
 
-  int get score => top.score + bottom.score;
-  int get _buttonCount => top.boxes.length + bottom.boxes.length;
-  List<Die> get _rollableDice => dice.where((Die die) => !die.picked).toList();
-  List<Die> get reportDice => List.from(dice);
+  int get score => _top.score + _bottom.score;
 
-  List<YahtzeeBox> get allBoxes {
-    List<YahtzeeBox> combined = <YahtzeeBox>[];
+  bool get _rollSucceeded => _pickedYahtzeeBox.score > 0;
+  bool get _turnOver => _rollCount >= ROLLS_PER_TURN || _rollSucceeded;
+  List<YahtzeeBox> get _allBoxes => _top.boxes + _bottom.boxes;
+  int get _boxCount => _allBoxes.length;
+  bool get _gameOver => _turnCount >= _boxCount;
+  List<YahtzeeBox> get _bonusYahtzeeBoxes => _allBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.isBonusYahtzee).toList();
+  List<int> get _bonusYahtzeeNumbers => _bonusYahtzeeBoxes.map((YahtzeeBox yahtzeeBox) => yahtzeeBox.myDice[0].value).toList();
+  int get _bonusYahtzeeCount => _bonusYahtzeeBoxes.length;
+  int get _bonusYahtzeeScore => BONUS_YAHTZEE_SCORE * _bonusYahtzeeCount;
+  List<Die> get _pickedDice => _pickedYahtzeeBox.myDice;
+  List<Die> get _allDice => _diceToRoll + _diceToKeep;
+  bool get _shouldUsePickedYahtzeeBox => _turnOver || _pickedYahtzeeBox.diceScore(_allDice) > 0;
 
-    combined.addAll(top.boxes);
-    combined.addAll(bottom.boxes);
-
-    return combined;
+  YahtzeeBox get _mostValuableYahtzeeBox {
+    return _yahtzeeBoxByScoreCompare(_top.mostValuableYahtzeeBox(_allDice), _bottom.mostValuableYahtzeeBox(_allDice), true);
   }
 
-  List<YahtzeeBox> get bonusYahtzeeBoxes => allBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.isBonusYahtzee).toList();
-  List<int> get bonusYahtzeeNumbers => bonusYahtzeeBoxes.map((YahtzeeBox yahtzeeBox) => yahtzeeBox.myDice[0].value).toList();
-  int get bonusYahtzeeCount => bonusYahtzeeBoxes.length;
-  int get bonusYahtzeeScore => BONUS_YAHTZEE_SCORE * bonusYahtzeeCount;
+  YahtzeeBox get _throwAwayYahtzeeBox {
+    return _yahtzeeBoxByScoreCompare(_top.throwAwayYahtzeeBox(_allDice), _bottom.throwAwayYahtzeeBox(_allDice), false);
+  }
 
-  static bool isYahtzee(List<Die> dice) {
-    return dice.length == DICE_COUNT && dice.every((Die die) => die.value == dice[0].value);
+  YahtzeeBox _yahtzeeBoxByScoreCompare(YahtzeeBox topYahtzeeBox, YahtzeeBox bottomYahtzeeBox, bool greaterThan) {
+    if (topYahtzeeBox == null) return bottomYahtzeeBox;
+    if (bottomYahtzeeBox == null) return topYahtzeeBox;
+    return (greaterThan == topYahtzeeBox.diceScore(_allDice) > bottomYahtzeeBox.diceScore(_allDice)) ? topYahtzeeBox : bottomYahtzeeBox;
   }
 
   play() async {
-    turnCount = 1;
-
+    _initPlay();
     _takeTurn();
   }
 
-  _takeTurn() async {
-    rollCount = 1;
-    turnDone = false;
+  _initPlay() {
+    _turnCount = 0;
+  }
 
+  _takeTurn() {
+    _initTurn();
     _roll();
   }
 
-  _roll() async {
-    _rollableDice.forEach((Die die) => die.roll());
-
-    _endRoll(_chooseYahtzeeBox());
+  _initTurn() {
+    _turnCount++;
+    _rollCount = 0;
   }
 
-  YahtzeeBox _chooseYahtzeeBox() {
-    YahtzeeBox yahtzeeBox;
-    YahtzeeBox topYahtzeeBox = top.mostValuableYahtzeeBox(dice);
-    YahtzeeBox bottomYahtzeeBox = bottom.mostValuableYahtzeeBox(dice);
-
-    if (topYahtzeeBox == null) yahtzeeBox = bottomYahtzeeBox;
-    else if (bottomYahtzeeBox == null) yahtzeeBox = topYahtzeeBox;
-    else yahtzeeBox = topYahtzeeBox.diceScore(dice) > bottomYahtzeeBox.diceScore(dice) ? topYahtzeeBox : bottomYahtzeeBox;
-
-    if (yahtzeeBox != null) yahtzeeBox.use(dice);
-
-    return yahtzeeBox;
+  _roll() {
+    _rollDice();
+    _pickYahtzeeBox();
+    _reportRoll();
+    _endRoll();
   }
 
-  _endRoll(YahtzeeBox yahtzeeBox) async {
-    if (yahtzeeBox != null) {
-      turnDone = true;
+  _rollDice() {
+    _rollCount++;
+    _diceToRoll.forEach((Die die) => die.roll());
+  }
 
-      if (onRollSuccess != null) onRollSuccess(yahtzeeBox);
+  _pickYahtzeeBox() {
+    _pickedYahtzeeBox = _mostValuableYahtzeeBox;
+
+    if (_pickedYahtzeeBox == null) _pickedYahtzeeBox = _throwAwayYahtzeeBox;
+
+    if (_shouldUsePickedYahtzeeBox) _pickedYahtzeeBox.use(_allDice);
+  }
+
+  _reportRoll() {
+    _report(onRollSuccess, onRollFail);
+  }
+
+  _endRoll() {
+    _turnOver ? _processTurn() : _nextRoll();
+  }
+
+  _nextRoll() {
+    Timer(Duration(seconds: ROLL_DELAY), () => _roll());
+  }
+
+  _processTurn() {
+    _reportTurn();
+    _endTurn();
+  }
+
+  _reportTurn() {
+    _report(onTurnSuccess, onTurnFail);
+  }
+
+  _report(Function onSuccess, Function onFail) {
+    if (_rollSucceeded) {
+      if (onSuccess != null) onSuccess(_pickedYahtzeeBox);
     }
-    else if (onRollFail != null) onRollFail(reportDice);
-
-    if (++rollCount > 3 || turnDone) _endTurn(yahtzeeBox);
-    else _nextRoll();
+    else if (onFail != null) onFail(_pickedDice);
   }
 
-  _nextRoll() async {
-    Timer(Duration(seconds: 3), () => _roll());
+  _endTurn() {
+    _gameOver ? _endGame() : _nextTurn();
   }
 
-  _endTurn(YahtzeeBox yahtzeeBox) async {
-    if (yahtzeeBox == null) {
-      if (onTurnFail != null) onTurnFail(reportDice);
-    }
-    else if (onTurnSuccess != null) onTurnSuccess(yahtzeeBox);
-
-    if (turnCount++ < _buttonCount) _nextTurn();
-    else _endGame();
-  }
-
-  _nextTurn() async {
-    Timer(Duration(seconds: 2), () => _takeTurn());
-  }
-
-  _endGame() async {
+  _endGame() {
     if (onGameEnd != null) onGameEnd(this);
+  }
+
+  _nextTurn() {
+    Timer(Duration(seconds: TURN_DELAY), () => _takeTurn());
   }
 
   @override
   String toString() {
     return <String>[
-      top.toString(),
-      bottom.toString(),
-      'Bonus Yahtzees: ' + bonusYahtzeeScore.toString() + ' ' + bonusYahtzeeNumbers.toString(),
-      'Total of Lower Section: ' + bottom.score.toString(),
-      'Total of Upper Section: ' + top.score.toString(),
+      _top.toString(),
+      _bottom.toString(),
+      'Bonus Yahtzees: ' + _bonusYahtzeeScore.toString() + ' ' + _bonusYahtzeeNumbers.toString(),
+      'Total of Lower Section: ' + _bottom.score.toString(),
+      'Total of Upper Section: ' + _top.score.toString(),
       'Grand Total: ' + score.toString()
     ].join('\n');
   }
@@ -131,94 +151,94 @@ class Yahtzee {
 
   testTop() {
     // None gotten
-    top.boxes[0].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 5), Die(value: 4)]);
-    top.boxes[1].use(<Die>[Die(value: 5), Die(value: 1), Die(value: 6), Die(value: 5), Die(value: 4)]);
-    top.boxes[2].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
-    top.boxes[3].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 5), Die(value: 1)]);
-    top.boxes[4].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
-    top.boxes[5].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 1), Die(value: 5), Die(value: 4)]);
+    _top.boxes[0].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 5), Die(value: 4)]);
+    _top.boxes[1].use(<Die>[Die(value: 5), Die(value: 1), Die(value: 6), Die(value: 5), Die(value: 4)]);
+    _top.boxes[2].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
+    _top.boxes[3].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 5), Die(value: 1)]);
+    _top.boxes[4].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
+    _top.boxes[5].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 1), Die(value: 5), Die(value: 4)]);
 
-    print('top - none');
-    print(top);
+    print('_top - none');
+    print(_top);
 
     // Gotten, no bonus
-    top.boxes[0].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
-    top.boxes[1].use(<Die>[Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 2), Die(value: 4)]);
-    top.boxes[2].use(<Die>[Die(value: 3), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
-    top.boxes[3].use(<Die>[Die(value: 4), Die(value: 2), Die(value: 6), Die(value: 4), Die(value: 1)]);
-    top.boxes[4].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 5), Die(value: 4)]);
-    top.boxes[5].use(<Die>[Die(value: 6), Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 4)]);
+    _top.boxes[0].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
+    _top.boxes[1].use(<Die>[Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 2), Die(value: 4)]);
+    _top.boxes[2].use(<Die>[Die(value: 3), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
+    _top.boxes[3].use(<Die>[Die(value: 4), Die(value: 2), Die(value: 6), Die(value: 4), Die(value: 1)]);
+    _top.boxes[4].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 5), Die(value: 4)]);
+    _top.boxes[5].use(<Die>[Die(value: 6), Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 4)]);
 
-    print('top - no bonus');
-    print(top);
+    print('_top - no bonus');
+    print(_top);
 
     // Gotten, bonus
-    top.boxes[0].use(<Die>[Die(value: 1), Die(value: 1), Die(value: 6), Die(value: 1), Die(value: 4)]);
-    top.boxes[1].use(<Die>[Die(value: 2), Die(value: 2), Die(value: 6), Die(value: 2), Die(value: 4)]);
-    top.boxes[2].use(<Die>[Die(value: 3), Die(value: 3), Die(value: 3), Die(value: 1), Die(value: 4)]);
-    top.boxes[3].use(<Die>[Die(value: 4), Die(value: 2), Die(value: 4), Die(value: 4), Die(value: 1)]);
-    top.boxes[4].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 5), Die(value: 5), Die(value: 4)]);
-    top.boxes[5].use(
+    _top.boxes[0].use(<Die>[Die(value: 1), Die(value: 1), Die(value: 6), Die(value: 1), Die(value: 4)]);
+    _top.boxes[1].use(<Die>[Die(value: 2), Die(value: 2), Die(value: 6), Die(value: 2), Die(value: 4)]);
+    _top.boxes[2].use(<Die>[Die(value: 3), Die(value: 3), Die(value: 3), Die(value: 1), Die(value: 4)]);
+    _top.boxes[3].use(<Die>[Die(value: 4), Die(value: 2), Die(value: 4), Die(value: 4), Die(value: 1)]);
+    _top.boxes[4].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 5), Die(value: 5), Die(value: 4)]);
+    _top.boxes[5].use(
       <Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)],
       asBonusYahtzee: true
     );
 
-    print('top - with bonus');
-    print(top);
+    print('_top - with bonus');
+    print(_top);
   }
 
   testBottom() {
     // None gotten
-    bottom.boxes[0].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
-    bottom.boxes[1].use(<Die>[Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 2), Die(value: 4)]);
-    bottom.boxes[2].use(<Die>[Die(value: 3), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
-    bottom.boxes[3].use(<Die>[Die(value: 4), Die(value: 2), Die(value: 6), Die(value: 4), Die(value: 1)]);
-    bottom.boxes[4].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 5), Die(value: 4)]);
-    bottom.boxes[5].use(<Die>[Die(value: 6), Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 4)]);
+    _bottom.boxes[0].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
+    _bottom.boxes[1].use(<Die>[Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 2), Die(value: 4)]);
+    _bottom.boxes[2].use(<Die>[Die(value: 3), Die(value: 2), Die(value: 6), Die(value: 1), Die(value: 4)]);
+    _bottom.boxes[3].use(<Die>[Die(value: 4), Die(value: 2), Die(value: 6), Die(value: 4), Die(value: 1)]);
+    _bottom.boxes[4].use(<Die>[Die(value: 5), Die(value: 2), Die(value: 6), Die(value: 5), Die(value: 4)]);
+    _bottom.boxes[5].use(<Die>[Die(value: 6), Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 4)]);
 
-    print('bottom - none');
-    print(bottom);
-
-    // Gotten
-    bottom.boxes[0].use(<Die>[Die(value: 1), Die(value: 1), Die(value: 6), Die(value: 1), Die(value: 4)]);
-    bottom.boxes[1].use(<Die>[Die(value: 2), Die(value: 2), Die(value: 2), Die(value: 2), Die(value: 4)]);
-    bottom.boxes[2].use(<Die>[Die(value: 3), Die(value: 3), Die(value: 3), Die(value: 4), Die(value: 4)]);
-    bottom.boxes[3].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 3)]);
-    bottom.boxes[4].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 5)]);
-    bottom.boxes[5].use(<Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)]);
-    bottom.boxes[6].use(<Die>[Die(value: 6), Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 4)]);
-
-    print('bottom - all');
-    print(bottom);
+    print('_bottom - none');
+    print(_bottom);
 
     // Gotten
-    bottom.boxes[0].use(
+    _bottom.boxes[0].use(<Die>[Die(value: 1), Die(value: 1), Die(value: 6), Die(value: 1), Die(value: 4)]);
+    _bottom.boxes[1].use(<Die>[Die(value: 2), Die(value: 2), Die(value: 2), Die(value: 2), Die(value: 4)]);
+    _bottom.boxes[2].use(<Die>[Die(value: 3), Die(value: 3), Die(value: 3), Die(value: 4), Die(value: 4)]);
+    _bottom.boxes[3].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 3)]);
+    _bottom.boxes[4].use(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 5)]);
+    _bottom.boxes[5].use(<Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)]);
+    _bottom.boxes[6].use(<Die>[Die(value: 6), Die(value: 2), Die(value: 1), Die(value: 6), Die(value: 4)]);
+
+    print('_bottom - all');
+    print(_bottom);
+
+    // Gotten
+    _bottom.boxes[0].use(
       <Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)],
       asBonusYahtzee: true
     );
-    bottom.boxes[1].use(
+    _bottom.boxes[1].use(
       <Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)],
       asBonusYahtzee: true
     );
-    bottom.boxes[2].use(
+    _bottom.boxes[2].use(
       <Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)],
       asBonusYahtzee: true
     );
-    bottom.boxes[3].use(
+    _bottom.boxes[3].use(
       <Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)],
       asBonusYahtzee: true
     );
-    bottom.boxes[4].use(
+    _bottom.boxes[4].use(
       <Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)],
       asBonusYahtzee: true
     );
-    bottom.boxes[5].use(<Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)]);
-    bottom.boxes[6].use(
+    _bottom.boxes[5].use(<Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)]);
+    _bottom.boxes[6].use(
       <Die>[Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6), Die(value: 6)],
       asBonusYahtzee: true
     );
 
-    print('bottom - all yahtzees');
-    print(bottom);
+    print('_bottom - all yahtzees');
+    print(_bottom);
   }
 }
