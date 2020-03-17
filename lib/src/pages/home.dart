@@ -22,27 +22,7 @@ class HomeState extends State<HomePage> {
   void initState() {
     setDatabase();
 
-    print(SmallStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1)]));
-    print(SmallStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2)]));
-    print(SmallStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 6)]));
-    print(SmallStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2), Die(value: 2)]));
-    print(SmallStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 6), Die(value: 2), Die(value: 2)]));
-    print(SmallStraightYahtzeeBox().diceFit(<Die>[Die(value: 2), Die(value: 3), Die(value: 6), Die(value: 2), Die(value: 2)]));
-    print(SmallStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 3), Die(value: 6), Die(value: 5), Die(value: 1)]));
-    print(SmallStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 3), Die(value: 4), Die(value: 5), Die(value: 2)]));
-    print(SmallStraightYahtzeeBox().diceFit(<Die>[Die(value: 6), Die(value: 1), Die(value: 2), Die(value: 4), Die(value: 5)]));
-    print('\n');
-    print(LargeStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1)]));
-    print(LargeStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2)]));
-    print(LargeStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 6)]));
-    print(LargeStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2), Die(value: 2)]));
-    print(LargeStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 6), Die(value: 2), Die(value: 2)]));
-    print(LargeStraightYahtzeeBox().diceFit(<Die>[Die(value: 2), Die(value: 3), Die(value: 6), Die(value: 2), Die(value: 2)]));
-    print(LargeStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 3), Die(value: 6), Die(value: 5), Die(value: 1)]));
-    print(LargeStraightYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 3), Die(value: 4), Die(value: 5), Die(value: 2)]));
-    print(LargeStraightYahtzeeBox().diceFit(<Die>[Die(value: 6), Die(value: 1), Die(value: 2), Die(value: 4), Die(value: 5)]));
-
-    // startYahtzeeGame('Player 1');
+    startYahtzeeGame('Player 1');
     // startYahtzeeGame('Player 2');
     // startYahtzeeGame('Player 3');
     // startYahtzeeGame('Player 4');

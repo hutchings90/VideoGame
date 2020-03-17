@@ -5,9 +5,11 @@ import 'package:playing_around/src/games/YahtzeeBox.dart';
 class YahtzeeYahtzeeBox extends YahtzeeBox {
   static const SCORE = 50;
 
-  int get score => canUse(myDice) ? SCORE : 0;
-
   YahtzeeYahtzeeBox() : super('Yahtzee');
+
+  int diceScore(List<Die> dice) {
+    return canUse(dice) ? SCORE : 0;
+  }
 
   bool canUse(List<Die> dice) {
     return Yahtzee.isYahtzee(dice);

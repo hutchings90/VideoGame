@@ -6,7 +6,9 @@ class StraightYahtzeeBox extends YahtzeeBox {
 
   StraightYahtzeeBox(this.min, this.potentialScore, name) : super(name + ' Straight');
 
-  int get score => isBonusYahtzee || canUse(myDice) ? potentialScore : 0;
+  int diceScore(List<Die> dice) {
+    return isBonusYahtzee || canUse(dice) ? potentialScore : 0;
+  }
 
   bool canUse(List<Die> dice) {
     Map<int, bool> usedValues = Map<int, bool>();

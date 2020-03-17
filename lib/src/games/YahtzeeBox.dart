@@ -6,11 +6,12 @@ abstract class YahtzeeBox {
   List<Die> myDice = <Die>[];
   bool isBonusYahtzee = false;
 
-  int get score;
+  int diceScore(List<Die> dice);
   bool canUse(List<Die> dice);
   List<Die> diceToKeep(List<Die> dice);
   List<Die> diceToRoll(List<Die> dice);
 
+  int get score => diceScore(myDice);
   bool get used => myDice.length == Yahtzee.DICE_COUNT;
 
   YahtzeeBox(this.name);

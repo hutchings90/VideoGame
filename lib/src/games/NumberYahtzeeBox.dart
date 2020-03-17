@@ -6,7 +6,9 @@ class NumberYahtzeeBox extends YahtzeeBox {
 
   NumberYahtzeeBox(this.value, name) : super(name);
 
-  int get score => myDice.fold(0, (int sum, Die die) => sum + (value == die.value ? die.value : 0));
+  int diceScore(List<Die> dice) {
+    return dice.fold(0, (int sum, Die die) => sum + (value == die.value ? die.value : 0));
+  }
 
   bool canUse(List<Die> dice) {
     return null != dice.firstWhere((Die die) => die.value == value, orElse: () => null);

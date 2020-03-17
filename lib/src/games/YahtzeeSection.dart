@@ -17,10 +17,11 @@ abstract class YahtzeeSection {
     }).join('\n');
   }
 
-  YahtzeeBox useDice(List<Die> dice) {
-    YahtzeeBox yahtzeeBox = usableBoxes.firstWhere((YahtzeeBox yahtzeeBox) => yahtzeeBox.canUse(dice), orElse: () => null);
+  YahtzeeBox mostValuableYahtzeeBox(List<Die> dice) {
+    List<YahtzeeBox> yahtzeeBoxes = usableBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.canUse(dice)).toList();
+    YahtzeeBox yahtzeeBox;
 
-    if (yahtzeeBox != null) yahtzeeBox.use(dice);
+    if (yahtzeeBoxes.length > 0) yahtzeeBox = yahtzeeBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) => cur.diceScore(dice) > prev.diceScore(dice) ? cur : prev);
 
     return yahtzeeBox;
   }

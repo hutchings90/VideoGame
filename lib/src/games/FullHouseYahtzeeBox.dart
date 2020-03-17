@@ -4,9 +4,11 @@ import 'package:playing_around/src/games/Die.dart';
 class FullHouseYahtzeeBox extends YahtzeeBox {
   static const SCORE = 25;
 
-  int get score => isBonusYahtzee || canUse(myDice) ? SCORE : 0;
-
   FullHouseYahtzeeBox() : super('Full House');
+
+  int diceScore(List<Die> dice) {
+    return isBonusYahtzee || canUse(dice) ? SCORE : 0;
+  }
 
   bool canUse(List<Die> dice) {
     List<int> values = dice.fold(Map<int, int>(), (Map<int, int> reduction, Die die) {

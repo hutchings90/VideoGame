@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:playing_around/src/games/Die.dart';
 import 'package:playing_around/src/games/YahtzeeBottom.dart';
 import 'package:playing_around/src/games/YahtzeeBox.dart';
+import 'package:playing_around/src/games/YahtzeeSection.dart';
 import 'package:playing_around/src/games/YahtzeeTop.dart';
 
 class Yahtzee {
@@ -63,11 +64,16 @@ class Yahtzee {
     _endRoll(_chooseYahtzeeBox());
   }
 
-  // TODO: Make this intelligent.
   YahtzeeBox _chooseYahtzeeBox() {
-    YahtzeeBox yahtzeeBox = top.useDice(dice);
+    YahtzeeBox yahtzeeBox;
+    YahtzeeBox topYahtzeeBox = top.mostValuableYahtzeeBox(dice);
+    YahtzeeBox bottomYahtzeeBox = bottom.mostValuableYahtzeeBox(dice);
 
-    if (yahtzeeBox == null) return bottom.useDice(dice);
+    if (topYahtzeeBox == null) yahtzeeBox = bottomYahtzeeBox;
+    else if (bottomYahtzeeBox == null) yahtzeeBox = topYahtzeeBox;
+    else yahtzeeBox = topYahtzeeBox.diceScore(dice) > bottomYahtzeeBox.diceScore(dice) ? topYahtzeeBox : bottomYahtzeeBox;
+
+    if (yahtzeeBox != null) yahtzeeBox.use(dice);
 
     return yahtzeeBox;
   }
