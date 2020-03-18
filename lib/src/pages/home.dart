@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:playing_around/src/games/Die.dart';
-import 'package:playing_around/src/games/LargeStraightYahtzeeBox.dart';
 import 'package:playing_around/src/games/Yahtzee.dart';
 import 'package:playing_around/src/games/YahtzeeBox.dart';
-import 'package:playing_around/src/games/SmallStraightYahtzeeBox.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'presets_manager.dart';
@@ -17,30 +15,33 @@ class HomePage extends StatefulWidget {
 
 class HomeState extends State<HomePage> {
   Database db;
+  List<Yahtzee> games = <Yahtzee>[];
+  int gameOverCount = 0, lowestScore = 1000000, highestScore = -1;
 
   @override
   void initState() {
     setDatabase();
 
-    startYahtzeeGame('Player 1');
-    // startYahtzeeGame('Player 2');
-    // startYahtzeeGame('Player 3');
-    // startYahtzeeGame('Player 4');
-    // startYahtzeeGame('Player 5');
+    for (int i = 1; i < 2; i++) {
+      games.add(yahtzeeGame('Player ' + i.toString()));
+    }
+
+    games.forEach((Yahtzee yahtzee) => yahtzee.play());
 
     super.initState();
   }
 
-  startYahtzeeGame(String name) {
-    Yahtzee(
+  Yahtzee yahtzeeGame(String name) {
+    return Yahtzee(
       onRollSuccess: (YahtzeeBox yahtzeeBox) => onRollSuccess(name, yahtzeeBox),
       onTurnSuccess: (YahtzeeBox yahtzeeBox) => onTurnSuccess(name, yahtzeeBox),
       onYahtzee: (YahtzeeBox yahtzeeBox) => onYahtzee(name, yahtzeeBox),
       onBonusYahtzee: (YahtzeeBox yahtzeeBox) => onBonusYahtzee(name, yahtzeeBox),
       onRollFail: (List<Die> dice) => onRollFail(name, dice),
       onTurnFail: (List<Die> dice) => onTurnFail(name, dice),
+      onRollAgain: (List<Die> diceToKeep, List<Die> diceToRoll) => onRollAgain(name, diceToKeep, diceToRoll),
       onGameEnd: (Yahtzee yahtzee) => onGameEnd(name, yahtzee),
-    ).play();
+    );
   }
 
   onRollSuccess(String name, YahtzeeBox yahtzeeBox) {
@@ -48,7 +49,7 @@ class HomeState extends State<HomePage> {
   }
 
   onTurnSuccess(String name, YahtzeeBox yahtzeeBox) {
-    turnReport(name, 'Turn Success: ' + yahtzeeBox.toString());
+    turnReport(name, 'Turn Success: ' + yahtzeeBox.toString(), lineBreak: true);
   }
 
   onYahtzee(String name, YahtzeeBox yahtzeeBox) {
@@ -64,15 +65,21 @@ class HomeState extends State<HomePage> {
   }
 
   onTurnFail(String name, List<Die> dice) {
-    turnReport(name, 'Turn Failed: ' + dice.toString());
+    turnReport(name, 'Turn Failed: ' + dice.toString(), lineBreak: true);
+  }
+
+  onRollAgain(String name, List<Die> diceToKeep, List<Die> diceToRoll) {
+    turnReport(name, 'Roll Again, Keep ' + diceToKeep.toString() + ', Roll ' + diceToRoll.toString());
   }
 
   onGameEnd(String name, Yahtzee yahtzee) {
-    turnReport(name, 'Game Over: \n' + yahtzee.toString());
+    turnReport(name, 'Game Over:\n' + yahtzee.toString());
   }
 
-  turnReport(String name, String report) {
+  turnReport(String name, String report, {bool lineBreak: false}) {
     print(name + ': ' + report);
+
+    if (lineBreak) print('');
   }
 
   @override
