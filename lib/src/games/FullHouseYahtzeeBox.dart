@@ -69,15 +69,4 @@ class FullHouseYahtzeeBox extends YahtzeeBox {
 
     return returnKeepers ? keepers : losers;
   }
-
-  static testDiceFit() {
-    print(FullHouseYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1)]));
-    print(FullHouseYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2)]));
-    print(FullHouseYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 1), Die(value: 2), Die(value: 2)]));
-    print(FullHouseYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 2), Die(value: 2), Die(value: 2)]));
-    print(FullHouseYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 1), Die(value: 1)]));
-    print(FullHouseYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 1), Die(value: 3), Die(value: 2), Die(value: 2)]));
-    print(FullHouseYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 1)]));
-    print(FullHouseYahtzeeBox().diceFit(<Die>[Die(value: 1), Die(value: 2), Die(value: 3), Die(value: 4), Die(value: 5)]));
-  }
 }
