@@ -2,9 +2,13 @@ import 'package:playing_around/src/games/Die.dart';
 import 'package:playing_around/src/games/SumYahtzeeBox.dart';
 
 abstract class OfAKindYahtzeeBox extends SumYahtzeeBox {
-  final int min;
+  final int _min;
+  final String _namePrefix;
 
-  OfAKindYahtzeeBox(this.min, name) : super(name + ' of a Kind');
+  OfAKindYahtzeeBox(this._min, this._namePrefix) : super();
+
+  String get name => _namePrefix + ' of a Kind';
+  int get scorePotential => 6 * 5;
 
   bool canUse(List<Die> dice) {
     return null != dice.fold(Map<int, int>(), (Map<int, int> reduction, Die die) {
@@ -15,7 +19,7 @@ abstract class OfAKindYahtzeeBox extends SumYahtzeeBox {
       );
 
       return reduction;
-    }).values.firstWhere((int value) => value >= min, orElse: () => null);
+    }).values.firstWhere((int value) => value >= _min, orElse: () => null);
   }
 
   List<Die> diceToKeep(List<Die> dice) {
@@ -41,37 +45,13 @@ abstract class OfAKindYahtzeeBox extends SumYahtzeeBox {
       return diceSoFar;
     });
 
-    int maxLength = 0;
-    int keepersKey;
-    List<Die> keepers = <Die>[];
     List<Die> losers = <Die>[];
+    List<Die> keepers = diceByValue.values.reduce((List<Die> prev, List<Die> cur) => cur.length > prev.length || (cur.length == prev.length && cur.first.value > prev.first.value) ? cur : prev);
 
-    diceByValue.values.forEach((List<Die> diceGroup) {
-      if (diceGroup.length > maxLength || (diceGroup.length == maxLength && diceGroup[0].value > keepers[0].value)) {
-        maxLength = diceGroup.length;
-        keepersKey = diceGroup[0].value;
-        keepers = diceGroup;
-      }
-    });
+    if (keepers.length < _min) losers.addAll(dice.where((Die die) => die.value > keepers.first.value));
+    else keepers.addAll(dice.where((Die die) => die.value > keepers.first.value));
 
-    if (keepers.length < min) losers.addAll(dice.where((Die die) => die.value > keepersKey));
-    else keepers.addAll(dice.where((Die die) => die.value > keepersKey));
-
-    losers.addAll(dice.where((Die die) => die.value < keepersKey));
-
-    // This is a good enough approach for version 1.0, but
-    // here are some other thoughts about choosing which
-    // dice to keep and which to roll again.
-
-    // Instead of using the current way of determining which
-    // dice to add to the keepers and losers, keep the dice
-    // that are more likely to decrease if rolled again and
-    // roll dice that are more likely to increase if rolled
-    // again.
-
-    // Another thought it to roll all dice that could increase,
-    // and keeping dice with the highest value that occurs
-    // frequently.
+    losers.addAll(dice.where((Die die) => die.value < keepers.first.value));
 
     return returnKeepers ? keepers : losers;
   }

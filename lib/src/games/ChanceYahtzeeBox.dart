@@ -4,7 +4,8 @@ import 'package:playing_around/src/games/SumYahtzeeBox.dart';
 class ChanceYahtzeeBox extends SumYahtzeeBox {
   static const int KEEP_THRESHOLD = 4;
 
-  ChanceYahtzeeBox() : super('Chance');
+  String get name => 'Chance';
+  int get scorePotential => 6 * 5;
 
   bool canUse(List<Die> dice) {
     return true;

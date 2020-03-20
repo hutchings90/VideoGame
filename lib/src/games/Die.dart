@@ -3,28 +3,28 @@ import 'dart:math';
 final random = new Random();
 
 class Die implements Comparable {
-  static const SIDE_COUNT = 6;
+  int _value;
 
-  int value;
+  int get value => _value;
 
-  Die({ this.value }) {
-    if (value == null) roll();
+  Die() {
+    roll();
   }
 
   Die.fromDie(Die die) {
-    value = die.value;
+    _value = die._value;
   }
 
   int compareTo(dynamic other) {
-    return value - other.value;
+    return _value - other._value;
   }
 
   @override
   String toString() {
-    return value.toString();
+    return _value.toString();
   }
 
   roll() {
-    value = random.nextInt(SIDE_COUNT) + 1;
+    _value = random.nextInt(6) + 1;
   }
 }

@@ -2,9 +2,12 @@ import 'package:playing_around/src/games/YahtzeeBox.dart';
 import 'package:playing_around/src/games/Die.dart';
 
 class FullHouseYahtzeeBox extends YahtzeeBox {
-  static const SCORE = 25;
+  static const int SCORE = 25;
 
-  FullHouseYahtzeeBox() : super('Full House');
+  FullHouseYahtzeeBox() : super();
+
+  String get name => 'Full House';
+  int get scorePotential => SCORE;
 
   int diceScore(List<Die> dice) {
     return isBonusYahtzee || canUse(dice) ? SCORE : 0;
@@ -23,7 +26,7 @@ class FullHouseYahtzeeBox extends YahtzeeBox {
 
     if (values.length != 2) return false;
 
-    return (values[0] == 2 && values[1] == 3) || (values[0] == 3 || values[1] == 2);
+    return (values.first == 2 && values[1] == 3) || (values.first == 3 || values[1] == 2);
   }
 
   List<Die> diceToKeep(List<Die> dice) {

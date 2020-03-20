@@ -2,12 +2,16 @@ import 'package:playing_around/src/games/Die.dart';
 import 'package:playing_around/src/games/YahtzeeBox.dart';
 
 class StraightYahtzeeBox extends YahtzeeBox {
-  final int min, potentialScore;
+  final int _min, _potentialScore;
+  final String _namePrefix;
 
-  StraightYahtzeeBox(this.min, this.potentialScore, name) : super(name + ' Straight');
+  StraightYahtzeeBox(this._min, this._potentialScore, this._namePrefix) : super();
+
+  String get name => _namePrefix + ' Straight';
+  int get scorePotential => _potentialScore;
 
   int diceScore(List<Die> dice) {
-    return isBonusYahtzee || canUse(dice) ? potentialScore : 0;
+    return isBonusYahtzee || canUse(dice) ? _potentialScore : 0;
   }
 
   bool canUse(List<Die> dice) {
@@ -25,8 +29,8 @@ class StraightYahtzeeBox extends YahtzeeBox {
 
     values.sort();
 
-    for (int i = 0; i < values.length - min + 1;) {
-      List<int> range = values.getRange(i, i + min).toList();
+    for (int i = 0; i < values.length - _min + 1;) {
+      List<int> range = values.getRange(i, i + _min).toList();
       int breakIndex = _sequenceBreakIndex(range);
 
       if (breakIndex == range.length) return true;
@@ -39,7 +43,7 @@ class StraightYahtzeeBox extends YahtzeeBox {
 
   int _sequenceBreakIndex(List<int> values) {
     if (values.length > 0) {
-      int firstValue = values[0];
+      int firstValue = values.first;
 
       for (int i = 1; i < values.length; i++) {
         if (values[i] != firstValue + i) return i;
@@ -58,7 +62,7 @@ class StraightYahtzeeBox extends YahtzeeBox {
   }
 
   List<Die> _processDiceFit(List<Die> dice, bool returnKeepers) {
-    int outerLoopEnd = dice.length - min;
+    int outerLoopEnd = dice.length - _min;
     List<Die> bestKeepers = <Die>[];
     List<Die> bestLosers = <Die>[];
     List<Die> keepers = <Die>[];
@@ -69,7 +73,7 @@ class StraightYahtzeeBox extends YahtzeeBox {
     for (int i = 0; i <= outerLoopEnd && i < dice.length; i++) {
       Die die = dice[i];
       int prevValue = die.value;
-      int limit = die.value + min - 1;
+      int limit = die.value + _min - 1;
       int innerLoopEnd = limit;
 
       keepers.add(die);
@@ -101,7 +105,7 @@ class StraightYahtzeeBox extends YahtzeeBox {
       losers = <Die>[];
     }
 
-    if (bestKeepers.length >= min) {
+    if (bestKeepers.length >= _min) {
       bestKeepers = dice;
       bestLosers = <Die>[];
     }

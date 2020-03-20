@@ -9,8 +9,7 @@ import 'package:playing_around/src/games/YahtzeeSection.dart';
 import 'package:playing_around/src/games/YahtzeeYahtzeeBox.dart';
 
 class YahtzeeBottom extends YahtzeeSection {
-  YahtzeeBottom() {
-    boxes = <YahtzeeBox>[
+  YahtzeeBottom() : super(<YahtzeeBox>[
       ThreeOfAKindYahtzeeBox(),
       FourOfAKindYahtzeeBox(),
       FullHouseYahtzeeBox(),
@@ -18,6 +17,8 @@ class YahtzeeBottom extends YahtzeeSection {
       LargeStraightYahtzeeBox(),
       YahtzeeYahtzeeBox(),
       ChanceYahtzeeBox()
-    ];
-  }
+  ]);
+
+  YahtzeeBox get yahtzeeYahtzeeBox => boxes.firstWhere((YahtzeeBox box) => box.runtimeType == YahtzeeYahtzeeBox);
+  bool get scoredYahtzee => yahtzeeYahtzeeBox.score != 0;
 }

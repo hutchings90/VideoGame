@@ -2,16 +2,17 @@ import 'package:playing_around/src/games/Die.dart';
 import 'package:playing_around/src/games/YahtzeeBox.dart';
 
 class YahtzeeYahtzeeBox extends YahtzeeBox {
-  static const SCORE = 50;
+  static const int SCORE = 50;
 
-  YahtzeeYahtzeeBox() : super('Yahtzee');
+  String get name => 'Yahtzee';
+  int get scorePotential => SCORE;
 
   int diceScore(List<Die> dice) {
     return canUse(dice) ? SCORE : 0;
   }
 
   bool canUse(List<Die> dice) {
-    return dice.length > 1 && dice.every((Die die) => die.value == dice[0].value);
+    return dice.length > 1 && dice.every((Die die) => die.value == dice.first.value);
   }
 
   List<Die> diceToKeep(List<Die> dice) {
@@ -27,19 +28,17 @@ class YahtzeeYahtzeeBox extends YahtzeeBox {
   }
 
   _mostFrequentDieValue(List<Die> dice) {
-    int mostFrequentValue = 0;
-    Map<int, int> frequencies = Map<int, int>();
+    Map<int, int> valueFrequencies = Map<int, int>();
 
-    dice.forEach((Die die) {
-      frequencies.update(
+    return dice.fold(null, (int frequentValue, Die die) {
+      int highestFrequency = valueFrequencies[frequentValue];
+      int dieFrequency = valueFrequencies.update(
         die.value,
         (int existing) => existing + 1,
         ifAbsent: () => 1
       );
 
-      if (null == frequencies[mostFrequentValue] || frequencies[die.value] > frequencies[mostFrequentValue]) mostFrequentValue = die.value;
+      return null == highestFrequency || dieFrequency > highestFrequency ? die.value : frequentValue;
     });
-
-    return mostFrequentValue;
   }
 }
