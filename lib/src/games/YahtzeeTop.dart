@@ -18,6 +18,7 @@ class YahtzeeTop extends YahtzeeSection {
   int get _scorePreBonus => super.score;
   bool get _getsBonus => _scorePreBonus >= BONUS_THRESHOLD;
   int get _bonus => _getsBonus ? BONUS_VALUE : 0;
+  YahtzeeBox get leastValuableAvailableBox => unusedBoxes.first;
 
   @override
   int get score => _scorePreBonus + _bonus;
