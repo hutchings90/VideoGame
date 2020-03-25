@@ -16,6 +16,7 @@ class HomePage extends StatefulWidget {
 
 class HomeState extends State<HomePage> {
   Database db;
+  List<Yahtzee> games;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
@@ -29,9 +30,9 @@ class HomeState extends State<HomePage> {
   }
 
   playYahtzee() {
-    String title = 'Welcome to Yahtzee!';
-    String body;
-    List<Yahtzee> games = <Yahtzee>[];
+    String title = 'Welcome to Yahtzee!', body;
+
+    games = <Yahtzee>[];
 
     for (int i = 1; i < 5; i++) {
       games.add(yahtzeeGame('Player ' + i.toString()));
@@ -89,7 +90,7 @@ class HomeState extends State<HomePage> {
   onGameEnd(Yahtzee yahtzee) {
     yahtzeeReport(yahtzee, 'Game Over\n' + yahtzee.toString());
 
-    if (true) playYahtzee();
+    if (games.where((Yahtzee game) => game.gameOver).length >= games.length) playYahtzee();
   }
 
   yahtzeeBoxReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {

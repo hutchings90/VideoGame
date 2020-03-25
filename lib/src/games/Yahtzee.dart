@@ -33,7 +33,7 @@ class Yahtzee {
   List<YahtzeeBox> get _allBoxes => _top.boxes + _bottom.boxes;
   List<YahtzeeBox> get _unusedBoxes => _top.unusedBoxes + _bottom.unusedBoxes;
   int get _boxCount => _allBoxes.length;
-  bool get _gameOver => _turnCount >= _boxCount;
+  bool get gameOver => _turnCount >= _boxCount;
   int get _bonusYahtzeeCount => _allBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.isBonusYahtzee).toList().length;
   int get _bonusYahtzeeScore => _yahtzeeYahtzeeBox.score == 0 ? 0 : (BONUS_YAHTZEE_SCORE * _bonusYahtzeeCount);
   List<Die> get allDice => _diceToRoll + _diceToKeep;
@@ -193,7 +193,7 @@ class Yahtzee {
   }
 
   _endTurn() {
-    _gameOver ? _endGame() : _nextTurn();
+    gameOver ? _endGame() : _nextTurn();
   }
 
   _endGame() {
