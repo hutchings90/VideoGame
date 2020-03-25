@@ -20,15 +20,14 @@ class Yahtzee {
   List<Die> _diceToKeep = <Die>[];
   YahtzeeBox _pickedYahtzeeBox;
 
-  final Function(YahtzeeBox yahtzeeBox) onRollSuccess, onTurnSuccess, onYahtzee, onBonusYahtzee;
-  final Function(List<Die> dice) onRollFail, onTurnFail;
-  final Function(List<Die> diceToKeep, List<Die> diceToRoll) onRollAgain;
-  final Function(Yahtzee yahtzee) onGameEnd;
+  final String playerName;
+  final Function(Yahtzee yahtzee) onRollSuccess, onRollFail, onRollAgain, onTurnSuccess, onTurnFail, onYahtzee, onBonusYahtzee, onGameEnd;
 
-  Yahtzee({this.onRollSuccess, this.onTurnSuccess, this.onYahtzee, this.onBonusYahtzee, this.onRollFail, this.onTurnFail, this.onRollAgain, this.onGameEnd});
+  Yahtzee(this.playerName, {this.onRollSuccess, this.onTurnSuccess, this.onYahtzee, this.onBonusYahtzee, this.onRollFail, this.onTurnFail, this.onRollAgain, this.onGameEnd});
 
   int get score => _top.score + _bottom.score + _bonusYahtzeeScore;
 
+  YahtzeeBox get pickedYahtzeeBox => _pickedYahtzeeBox;
   bool get _rollSucceeded => _pickedYahtzeeBox.score > 0;
   bool get _turnOver => _rollCount >= ROLLS_PER_TURN || _diceToRoll.length < 1;
   List<YahtzeeBox> get _allBoxes => _top.boxes + _bottom.boxes;
@@ -37,12 +36,14 @@ class Yahtzee {
   bool get _gameOver => _turnCount >= _boxCount;
   int get _bonusYahtzeeCount => _allBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.isBonusYahtzee).toList().length;
   int get _bonusYahtzeeScore => _yahtzeeYahtzeeBox.score == 0 ? 0 : (BONUS_YAHTZEE_SCORE * _bonusYahtzeeCount);
-  List<Die> get _allDice => _diceToRoll + _diceToKeep;
-  bool get _rolledYahtzee => _allDice.every((Die die) => die.value == _allDice.first.value);
+  List<Die> get allDice => _diceToRoll + _diceToKeep;
+  List<Die> get diceToRoll => _diceToRoll;
+  List<Die> get diceToKeep => _diceToKeep;
+  bool get _rolledYahtzee => allDice.every((Die die) => die.value == allDice.first.value);
   YahtzeeBox get _yahtzeeYahtzeeBox => _bottom.yahtzeeYahtzeeBox;
   bool get _usedYahtzee => _yahtzeeYahtzeeBox.used;
   bool get _asBonusYahtzee => _rolledYahtzee && _usedYahtzee;
-  YahtzeeBox get _throwAwayYahtzeeBox => _unusedBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) => cur.diceScore(_allDice) > prev.diceScore(_allDice) ? cur : prev);
+  YahtzeeBox get _throwAwayYahtzeeBox => _unusedBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) => cur.diceScore(allDice) > prev.diceScore(allDice) ? cur : prev);
 
   YahtzeeBox get _mostValuableYahtzeeBox {
     List<YahtzeeBox> yahtzeeBoxes;
@@ -53,7 +54,7 @@ class Yahtzee {
 
       if (!_usedYahtzee) return _yahtzeeYahtzeeBox;
 
-      numberYahtzeeBox = _top.boxOfValue(_allDice.first.value);
+      numberYahtzeeBox = _top.boxOfValue(allDice.first.value);
       if (!numberYahtzeeBox.used) return numberYahtzeeBox;
 
       preferredBottomBox = _bottom.preferredWildcardBox;
@@ -62,10 +63,10 @@ class Yahtzee {
       return _top.leastValuableAvailableBox;
     }
 
-    yahtzeeBoxes = _unusedBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.canUse(_allDice)).toList();
+    yahtzeeBoxes = _unusedBoxes.where((YahtzeeBox yahtzeeBox) => yahtzeeBox.canUse(allDice)).toList();
 
     if (yahtzeeBoxes.length < 1) return null;
-    return yahtzeeBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) => cur.diceScore(_allDice) > prev.diceScore(_allDice) ? cur : prev);
+    return yahtzeeBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) => cur.diceScore(allDice) > prev.diceScore(allDice) ? cur : prev);
   }
 
   YahtzeeBox get _diceSeparatorYahtzeeBox {
@@ -73,16 +74,16 @@ class Yahtzee {
 
     if (_asBonusYahtzee) return _yahtzeeYahtzeeBox;
 
-    minRollCount = _allDice.length + 1;
+    minRollCount = allDice.length + 1;
 
     return _unusedBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) {
-      int curRollCount = cur.diceToRoll(_allDice).length;
+      int curRollCount = cur.diceToRoll(allDice).length;
 
       if (curRollCount < minRollCount) {
         minRollCount = curRollCount;
         return cur;
       }
-      if (curRollCount == minRollCount && cur.diceScore(_allDice) > prev.diceScore(_allDice)) return cur;
+      if (curRollCount == minRollCount && cur.diceScore(allDice) > prev.diceScore(allDice)) return cur;
       return prev;
     });
   }
@@ -139,7 +140,7 @@ class Yahtzee {
   }
 
   _separateDice() {
-    List<Die> dice = List.from(_allDice);
+    List<Die> dice = List.from(allDice);
     YahtzeeBox yahtzeeBox = _diceSeparatorYahtzeeBox;
 
     _diceToKeep = yahtzeeBox.diceToKeep(dice);
@@ -151,17 +152,17 @@ class Yahtzee {
 
     if (_pickedYahtzeeBox == null) _pickedYahtzeeBox = _throwAwayYahtzeeBox;
 
-    _pickedYahtzeeBox.use(_allDice, asBonusYahtzee: _asBonusYahtzee);
+    _pickedYahtzeeBox.use(allDice, asBonusYahtzee: _asBonusYahtzee);
   }
 
   _reportRoll() {
     if (!_turnOver) {
-      if (onRollAgain != null) onRollAgain(_diceToKeep, _diceToRoll);
+      if (onRollAgain != null) onRollAgain(this);
     }
     else if (_rollSucceeded) {
-      if (onRollSuccess != null) onRollSuccess(_pickedYahtzeeBox);
+      if (onRollSuccess != null) onRollSuccess(this);
     }
-    else if (onRollFail != null) onRollFail(_allDice);
+    else if (onRollFail != null) onRollFail(this);
   }
 
   _endRoll() {
@@ -179,16 +180,16 @@ class Yahtzee {
 
   _reportTurn() {
     if (_rollSucceeded) {
-      if (onTurnSuccess != null) onTurnSuccess(_pickedYahtzeeBox);
+      if (onTurnSuccess != null) onTurnSuccess(this);
 
       if (_pickedYahtzeeBox.runtimeType == YahtzeeYahtzeeBox) {
-        if (onYahtzee != null) onYahtzee(_pickedYahtzeeBox);
+        if (onYahtzee != null) onYahtzee(this);
       }
       else if (_pickedYahtzeeBox.isBonusYahtzee) {
-        if (onBonusYahtzee != null) onBonusYahtzee(_pickedYahtzeeBox);
+        if (onBonusYahtzee != null) onBonusYahtzee(this);
       }
     }
-    else if (onTurnFail != null) onTurnFail(_allDice);
+    else if (onTurnFail != null) onTurnFail(this);
   }
 
   _endTurn() {

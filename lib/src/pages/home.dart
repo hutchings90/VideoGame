@@ -23,63 +23,92 @@ class HomeState extends State<HomePage> {
     setDatabase();
     initNotifications();
 
-    for (int i = 1; i < 2; i++) {
-      yahtzeeGame('Player ' + i.toString());
-    }
+    playYahtzee();
 
     super.initState();
   }
 
-  yahtzeeGame(String name) {
-    Yahtzee(
-      // onRollSuccess: (YahtzeeBox yahtzeeBox) => onRollSuccess(name, yahtzeeBox),
-      // onTurnSuccess: (YahtzeeBox yahtzeeBox) => onTurnSuccess(name, yahtzeeBox),
-      // onYahtzee: (YahtzeeBox yahtzeeBox) => onYahtzee(name, yahtzeeBox),
-      // onBonusYahtzee: (YahtzeeBox yahtzeeBox) => onBonusYahtzee(name, yahtzeeBox),
-      // onRollFail: (List<Die> dice) => onRollFail(name, dice),
-      // onTurnFail: (List<Die> dice) => onTurnFail(name, dice),
-      // onRollAgain: (List<Die> diceToKeep, List<Die> diceToRoll) => onRollAgain(name, diceToKeep, diceToRoll),
-      onGameEnd: (Yahtzee yahtzee) => onGameEnd(name, yahtzee),
-    ).play();
+  playYahtzee() {
+    String title = 'Welcome to Yahtzee!';
+    String body;
+    List<Yahtzee> games = <Yahtzee>[];
+
+    for (int i = 1; i < 5; i++) {
+      games.add(yahtzeeGame('Player ' + i.toString()));
+    }
+
+    body = games.map((Yahtzee game) => game.playerName).join(', ');
+    games.forEach((Yahtzee yahtzee) => yahtzee.play());
+
+    print(title + ' ' + body);
+    showNotification(title, body);
   }
 
-  onRollSuccess(String name, YahtzeeBox yahtzeeBox) {
-    yahtzeeReport(name, 'Roll Success: ' + yahtzeeBox.toString());
+  Yahtzee yahtzeeGame(String name) {
+    return Yahtzee(
+      name,
+      // onRollSuccess: onRollSuccess,
+      // onRollFail: onRollFail,
+      // onRollAgain: onRollAgain,
+      // onTurnSuccess: onTurnSuccess,
+      // onTurnFail: onTurnFail,
+      onYahtzee: onYahtzee,
+      onBonusYahtzee: onBonusYahtzee,
+      onGameEnd: onGameEnd,
+    );
   }
 
-  onTurnSuccess(String name, YahtzeeBox yahtzeeBox) {
-    yahtzeeReport(name, 'Turn Success: ' + yahtzeeBox.toString(), lineBreak: true);
+  onRollSuccess(Yahtzee yahtzee) {
+    yahtzeeBoxReport(yahtzee, 'Roll Success: ');
   }
 
-  onYahtzee(String name, YahtzeeBox yahtzeeBox) {
-    yahtzeeReport(name, 'Yahtzee: ' + yahtzeeBox.toString());
+  onTurnSuccess(Yahtzee yahtzee) {
+    yahtzeeBoxReport(yahtzee, 'Turn Success: ', lineBreak: true);
   }
 
-  onBonusYahtzee(String name, YahtzeeBox yahtzeeBox) {
-    yahtzeeReport(name, 'Bonus Yahtzee: ' + yahtzeeBox.toString());
+  onYahtzee(Yahtzee yahtzee) {
+    yahtzeeBoxReport(yahtzee, 'Yahtzee: ');
   }
 
-  onRollFail(String name, List<Die> dice) {
-    yahtzeeReport(name, 'Roll Failed: ' + dice.toString());
+  onBonusYahtzee(Yahtzee yahtzee) {
+    yahtzeeBoxReport(yahtzee, 'Bonus Yahtzee: ');
   }
 
-  onTurnFail(String name, List<Die> dice) {
-    yahtzeeReport(name, 'Turn Failed: ' + dice.toString(), lineBreak: true);
+  onRollFail(Yahtzee yahtzee) {
+    allDiceReport(yahtzee, 'Roll Failed: ');
   }
 
-  onRollAgain(String name, List<Die> diceToKeep, List<Die> diceToRoll) {
-    yahtzeeReport(name, 'Roll Again, Keep ' + diceToKeep.toString() + ', Roll ' + diceToRoll.toString());
+  onTurnFail(Yahtzee yahtzee) {
+    allDiceReport(yahtzee, 'Turn Failed: ', lineBreak: true);
   }
 
-  onGameEnd(String name, Yahtzee yahtzee) {
-    yahtzeeReport(name, 'Game Over\n' + yahtzee.toString());
+  onRollAgain(Yahtzee yahtzee) {
+    yahtzeeReport(yahtzee, 'Roll Again, Keep ' + yahtzee.diceToKeep.toString() + ', Roll ' + yahtzee.diceToRoll.toString());
   }
 
-  yahtzeeReport(String name, String report, {bool lineBreak: false}) async {
-    print(name + ': ' + report);
+  onGameEnd(Yahtzee yahtzee) {
+    yahtzeeReport(yahtzee, 'Game Over\n' + yahtzee.toString());
+
+    if (true) playYahtzee();
+  }
+
+  yahtzeeBoxReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
+    yahtzeeReport(yahtzee, prefix + yahtzee.pickedYahtzeeBox.toString());
+  }
+
+  allDiceReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
+    yahtzeeReport(yahtzee, prefix + yahtzee.allDice.toString());
+  }
+
+  yahtzeeReport(Yahtzee yahtzee, String report, {bool lineBreak: false}) {
+    print(yahtzee.playerName + ': ' + report);
 
     if (lineBreak) print('');
 
+    showNotification(yahtzee.playerName, report);
+  }
+
+  showNotification(String title, String report) async {
     AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'Video Game', 'Video Game', 'An app for video chatting and AI game playing.',
       importance: Importance.Max, priority: Priority.High, ticker: 'ticker'
@@ -87,7 +116,7 @@ class HomeState extends State<HomePage> {
     IOSNotificationDetails iOSPlatformChannelSpecifics = IOSNotificationDetails();
     NotificationDetails platformChannelSpecifics = NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
-      0, name, report, platformChannelSpecifics,
+      0, title, report, platformChannelSpecifics,
       payload: 'item x'
     );
   }
