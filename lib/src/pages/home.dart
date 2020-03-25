@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:playing_around/src/games/Die.dart';
 import 'package:playing_around/src/games/Yahtzee.dart';
 import 'package:playing_around/src/games/YahtzeeBox.dart';
@@ -15,10 +16,12 @@ class HomePage extends StatefulWidget {
 
 class HomeState extends State<HomePage> {
   Database db;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   void initState() {
     setDatabase();
+    initNotifications();
 
     for (int i = 1; i < 2; i++) {
       yahtzeeGame('Player ' + i.toString());
@@ -41,41 +44,52 @@ class HomeState extends State<HomePage> {
   }
 
   onRollSuccess(String name, YahtzeeBox yahtzeeBox) {
-    turnReport(name, 'Roll Success: ' + yahtzeeBox.toString());
+    yahtzeeReport(name, 'Roll Success: ' + yahtzeeBox.toString());
   }
 
   onTurnSuccess(String name, YahtzeeBox yahtzeeBox) {
-    turnReport(name, 'Turn Success: ' + yahtzeeBox.toString(), lineBreak: true);
+    yahtzeeReport(name, 'Turn Success: ' + yahtzeeBox.toString(), lineBreak: true);
   }
 
   onYahtzee(String name, YahtzeeBox yahtzeeBox) {
-    turnReport(name, 'Yahtzee: ' + yahtzeeBox.toString());
+    yahtzeeReport(name, 'Yahtzee: ' + yahtzeeBox.toString());
   }
 
   onBonusYahtzee(String name, YahtzeeBox yahtzeeBox) {
-    turnReport(name, 'Bonus Yahtzee: ' + yahtzeeBox.toString());
+    yahtzeeReport(name, 'Bonus Yahtzee: ' + yahtzeeBox.toString());
   }
 
   onRollFail(String name, List<Die> dice) {
-    turnReport(name, 'Roll Failed: ' + dice.toString());
+    yahtzeeReport(name, 'Roll Failed: ' + dice.toString());
   }
 
   onTurnFail(String name, List<Die> dice) {
-    turnReport(name, 'Turn Failed: ' + dice.toString(), lineBreak: true);
+    yahtzeeReport(name, 'Turn Failed: ' + dice.toString(), lineBreak: true);
   }
 
   onRollAgain(String name, List<Die> diceToKeep, List<Die> diceToRoll) {
-    turnReport(name, 'Roll Again, Keep ' + diceToKeep.toString() + ', Roll ' + diceToRoll.toString());
+    yahtzeeReport(name, 'Roll Again, Keep ' + diceToKeep.toString() + ', Roll ' + diceToRoll.toString());
   }
 
   onGameEnd(String name, Yahtzee yahtzee) {
-    turnReport(name, 'Game Over\n' + yahtzee.toString());
+    yahtzeeReport(name, 'Game Over\n' + yahtzee.toString());
   }
 
-  turnReport(String name, String report, {bool lineBreak: false}) {
+  yahtzeeReport(String name, String report, {bool lineBreak: false}) async {
     print(name + ': ' + report);
 
     if (lineBreak) print('');
+
+    AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'Video Game', 'Video Game', 'An app for video chatting and AI game playing.',
+      importance: Importance.Max, priority: Priority.High, ticker: 'ticker'
+    );
+    IOSNotificationDetails iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    NotificationDetails platformChannelSpecifics = NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+      0, name, report, platformChannelSpecifics,
+      payload: 'item x'
+    );
   }
 
   @override
@@ -109,6 +123,14 @@ class HomeState extends State<HomePage> {
       await database.execute('CREATE TABLE video_game_contact (id INTEGER PRIMARY KEY, video_game_id INTEGER, contact_id INTEGER)');
       await database.execute('CREATE TABLE scheduled_video_game (id INTEGER PRIMARY KEY, name TEXT, video_game_id INTEGER, time INTEGER, sunday INTEGER, monday INTEGER, tuesday INTEGER, wednesday INTEGER, thursday INTEGER, friday INTEGER, saturday INTEGER)');
     });
+  }
+
+  initNotifications() async {
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+    IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
+    InitializationSettings initializationSettings = InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
   startPresetVideoGame() {
