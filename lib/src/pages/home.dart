@@ -39,10 +39,11 @@ class HomeState extends State<HomePage> {
     }
 
     body = games.map((Yahtzee game) => game.playerName).join(', ');
-    games.forEach((Yahtzee yahtzee) => yahtzee.play());
 
     print(title + ' ' + body);
     showNotification(title, body);
+
+    Timer(Duration(seconds: 5), () => games.forEach((Yahtzee yahtzee) => yahtzee.play()));
   }
 
   Yahtzee yahtzeeGame(String name) {
@@ -94,7 +95,22 @@ class HomeState extends State<HomePage> {
   onGameEnd(Yahtzee yahtzee) {
     print(yahtzee.playerName + ': ' + 'Game Over\n' + yahtzee.toString());
 
-    if (games.where((Yahtzee game) => game.gameOver).length >= games.length) showNotification('All games have ended!', 'Scores will be reported shortly.');
+    if (games.where((Yahtzee game) => game.gameOver).length >= games.length) {
+      showNotification('Game Over!', 'All games have ended. Scores will be reported shortly.');
+
+      Timer.periodic(Duration(seconds: 3), reportYahtzeeScore);
+    }
+  }
+
+  reportYahtzeeScore(Timer timer) {
+    Yahtzee yahtzee = games.removeLast();
+
+    gameReport(yahtzee, yahtzee.score.toString());
+
+    if (games.length < 1) {
+      Timer(Duration(seconds: 5), () => playYahtzee());
+      timer.cancel();
+    }
   }
 
   scoreSuccessReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
