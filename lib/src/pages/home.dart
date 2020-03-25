@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:playing_around/src/games/Yahtzee.dart';
@@ -32,7 +34,7 @@ class HomeState extends State<HomePage> {
 
     games = <Yahtzee>[];
 
-    for (int i = 1; i < 1000; i++) {
+    for (int i = 1; i < 2; i++) {
       games.add(yahtzeeGame('Player ' + i.toString()));
     }
 
@@ -51,7 +53,7 @@ class HomeState extends State<HomePage> {
       // onRollAgain: onRollAgain,
       // onTurnSuccess: onTurnSuccess,
       // onTurnFail: onTurnFail,
-      // onYahtzee: onYahtzee,
+      onYahtzee: onYahtzee,
       onBonusYahtzee: onBonusYahtzee,
       onGameEnd: onGameEnd,
     );
@@ -90,13 +92,13 @@ class HomeState extends State<HomePage> {
   }
 
   onGameEnd(Yahtzee yahtzee) {
-    // gameReport(yahtzee, 'Game Over\n' + yahtzee.toString());
+    print(yahtzee.playerName + ': ' + 'Game Over\n' + yahtzee.toString());
 
-    if (games.where((Yahtzee game) => game.gameOver).length >= games.length) playYahtzee();
+    if (games.where((Yahtzee game) => game.gameOver).length >= games.length) showNotification('All games have ended!', 'Scores will be reported shortly.');
   }
 
   scoreSuccessReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
-    gameReport(yahtzee, prefix + yahtzee.pickedYahtzeeBox.toString());
+    gameReport(yahtzee, prefix + yahtzee.pickedYahtzeeBox.name + ' (' + yahtzee.pickedYahtzeeBox.score.toString() + ' pts)');
   }
 
   allDiceReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
