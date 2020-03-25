@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:playing_around/src/games/Die.dart';
 import 'package:playing_around/src/games/Yahtzee.dart';
-import 'package:playing_around/src/games/YahtzeeBox.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'presets_manager.dart';
@@ -34,7 +32,7 @@ class HomeState extends State<HomePage> {
 
     games = <Yahtzee>[];
 
-    for (int i = 1; i < 5; i++) {
+    for (int i = 1; i < 100; i++) {
       games.add(yahtzeeGame('Player ' + i.toString()));
     }
 
@@ -60,48 +58,52 @@ class HomeState extends State<HomePage> {
   }
 
   onRollSuccess(Yahtzee yahtzee) {
-    yahtzeeBoxReport(yahtzee, 'Roll Success: ');
-  }
-
-  onTurnSuccess(Yahtzee yahtzee) {
-    yahtzeeBoxReport(yahtzee, 'Turn Success: ', lineBreak: true);
-  }
-
-  onYahtzee(Yahtzee yahtzee) {
-    yahtzeeBoxReport(yahtzee, 'Yahtzee: ');
-  }
-
-  onBonusYahtzee(Yahtzee yahtzee) {
-    yahtzeeBoxReport(yahtzee, 'Bonus Yahtzee: ');
+    scoreSuccessReport(yahtzee, 'Roll Success: ');
   }
 
   onRollFail(Yahtzee yahtzee) {
     allDiceReport(yahtzee, 'Roll Failed: ');
   }
 
+  onRollAgain(Yahtzee yahtzee) {
+    gameReport(yahtzee, 'Roll Again, Keep ' + yahtzee.diceToKeep.toString() + ', Roll ' + yahtzee.diceToRoll.toString());
+  }
+
+  onTurnSuccess(Yahtzee yahtzee) {
+    scoreSuccessReport(yahtzee, 'Turn Success: ', lineBreak: true);
+  }
+
   onTurnFail(Yahtzee yahtzee) {
     allDiceReport(yahtzee, 'Turn Failed: ', lineBreak: true);
   }
 
-  onRollAgain(Yahtzee yahtzee) {
-    yahtzeeReport(yahtzee, 'Roll Again, Keep ' + yahtzee.diceToKeep.toString() + ', Roll ' + yahtzee.diceToRoll.toString());
+  onYahtzee(Yahtzee yahtzee) {
+    yahtzeeReport(yahtzee);
+  }
+
+  onBonusYahtzee(Yahtzee yahtzee) {
+    scoreSuccessReport(yahtzee, 'Bonus Yathzee: ');
+  }
+
+  yahtzeeReport(Yahtzee yahtzee) {
+    gameReport(yahtzee, 'Yahtzee of ' + yahtzee.allDice.first.value.toString() + 's in ' + yahtzee.rollCount.toString() + ' roll' + (yahtzee.rollCount == 1 ? '' : 's') + ' for ' + yahtzee.pickedYahtzeeBox.score.toString() + ' pts!');
   }
 
   onGameEnd(Yahtzee yahtzee) {
-    yahtzeeReport(yahtzee, 'Game Over\n' + yahtzee.toString());
+    gameReport(yahtzee, 'Game Over\n' + yahtzee.toString());
 
     if (games.where((Yahtzee game) => game.gameOver).length >= games.length) playYahtzee();
   }
 
-  yahtzeeBoxReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
-    yahtzeeReport(yahtzee, prefix + yahtzee.pickedYahtzeeBox.toString());
+  scoreSuccessReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
+    gameReport(yahtzee, prefix + yahtzee.pickedYahtzeeBox.toString());
   }
 
   allDiceReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
-    yahtzeeReport(yahtzee, prefix + yahtzee.allDice.toString());
+    gameReport(yahtzee, prefix + yahtzee.allDice.toString());
   }
 
-  yahtzeeReport(Yahtzee yahtzee, String report, {bool lineBreak: false}) {
+  gameReport(Yahtzee yahtzee, String report, {bool lineBreak: false}) {
     print(yahtzee.playerName + ': ' + report);
 
     if (lineBreak) print('');

@@ -40,9 +40,10 @@ class Yahtzee {
   List<Die> get diceToRoll => _diceToRoll;
   List<Die> get diceToKeep => _diceToKeep;
   bool get _rolledYahtzee => allDice.every((Die die) => die.value == allDice.first.value);
+  int get rollCount => _rollCount;
   YahtzeeBox get _yahtzeeYahtzeeBox => _bottom.yahtzeeYahtzeeBox;
-  bool get _usedYahtzee => _yahtzeeYahtzeeBox.used;
-  bool get _asBonusYahtzee => _rolledYahtzee && _usedYahtzee;
+  bool get usedYahtzee => _yahtzeeYahtzeeBox.used;
+  bool get _asBonusYahtzee => _rolledYahtzee && usedYahtzee;
   YahtzeeBox get _throwAwayYahtzeeBox => _unusedBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) => cur.diceScore(allDice) > prev.diceScore(allDice) ? cur : prev);
 
   YahtzeeBox get _mostValuableYahtzeeBox {
@@ -52,7 +53,7 @@ class Yahtzee {
       NumberYahtzeeBox numberYahtzeeBox;
       YahtzeeBox preferredBottomBox;
 
-      if (!_usedYahtzee) return _yahtzeeYahtzeeBox;
+      if (!usedYahtzee) return _yahtzeeYahtzeeBox;
 
       numberYahtzeeBox = _top.boxOfValue(allDice.first.value);
       if (!numberYahtzeeBox.used) return numberYahtzeeBox;
