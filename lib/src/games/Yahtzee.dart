@@ -43,7 +43,7 @@ class Yahtzee {
   int get rollCount => _rollCount;
   YahtzeeBox get _yahtzeeYahtzeeBox => _bottom.yahtzeeYahtzeeBox;
   bool get usedYahtzee => _yahtzeeYahtzeeBox.used;
-  bool get _asBonusYahtzee => _rolledYahtzee && usedYahtzee;
+  bool get gotYahtzee => _yahtzeeYahtzeeBox.score > 0;
   YahtzeeBox get _throwAwayYahtzeeBox => _unusedBoxes.reduce((YahtzeeBox prev, YahtzeeBox cur) => cur.diceScore(allDice) > prev.diceScore(allDice) ? cur : prev);
 
   YahtzeeBox get _mostValuableYahtzeeBox {
@@ -73,7 +73,7 @@ class Yahtzee {
   YahtzeeBox get _diceSeparatorYahtzeeBox {
     int minRollCount;
 
-    if (_asBonusYahtzee) return _yahtzeeYahtzeeBox;
+    if (_rolledYahtzee) return _yahtzeeYahtzeeBox;
 
     minRollCount = allDice.length + 1;
 
@@ -153,7 +153,7 @@ class Yahtzee {
 
     if (_pickedYahtzeeBox == null) _pickedYahtzeeBox = _throwAwayYahtzeeBox;
 
-    _pickedYahtzeeBox.use(allDice, asBonusYahtzee: _asBonusYahtzee);
+    _pickedYahtzeeBox.use(allDice, asBonusYahtzee: _rolledYahtzee && usedYahtzee);
   }
 
   _reportRoll() {

@@ -32,7 +32,7 @@ class HomeState extends State<HomePage> {
 
     games = <Yahtzee>[];
 
-    for (int i = 1; i < 100; i++) {
+    for (int i = 1; i < 1000; i++) {
       games.add(yahtzeeGame('Player ' + i.toString()));
     }
 
@@ -51,7 +51,7 @@ class HomeState extends State<HomePage> {
       // onRollAgain: onRollAgain,
       // onTurnSuccess: onTurnSuccess,
       // onTurnFail: onTurnFail,
-      onYahtzee: onYahtzee,
+      // onYahtzee: onYahtzee,
       onBonusYahtzee: onBonusYahtzee,
       onGameEnd: onGameEnd,
     );
@@ -82,15 +82,15 @@ class HomeState extends State<HomePage> {
   }
 
   onBonusYahtzee(Yahtzee yahtzee) {
-    scoreSuccessReport(yahtzee, 'Bonus Yathzee: ');
+    yahtzeeReport(yahtzee, bonus: true);
   }
 
-  yahtzeeReport(Yahtzee yahtzee) {
-    gameReport(yahtzee, 'Yahtzee of ' + yahtzee.allDice.first.value.toString() + 's in ' + yahtzee.rollCount.toString() + ' roll' + (yahtzee.rollCount == 1 ? '' : 's') + ' for ' + yahtzee.pickedYahtzeeBox.score.toString() + ' pts!');
+  yahtzeeReport(Yahtzee yahtzee, {bool bonus=false}) {
+    gameReport(yahtzee, (bonus ? 'Bonus ' : '') + 'Yahtzee of ' + yahtzee.allDice.first.value.toString() + 's (' + (bonus ? yahtzee.pickedYahtzeeBox.name + ', ' : '') + ((bonus && yahtzee.gotYahtzee ? 100 : 0) + yahtzee.pickedYahtzeeBox.score).toString() + ' pts)!');
   }
 
   onGameEnd(Yahtzee yahtzee) {
-    gameReport(yahtzee, 'Game Over\n' + yahtzee.toString());
+    // gameReport(yahtzee, 'Game Over\n' + yahtzee.toString());
 
     if (games.where((Yahtzee game) => game.gameOver).length >= games.length) playYahtzee();
   }
