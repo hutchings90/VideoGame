@@ -18,6 +18,8 @@ class HomeState extends State<HomePage> {
   Database db;
   List<Yahtzee> games;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  int round = 1;
+  int endedGameCount;
 
   @override
   void initState() {
@@ -33,9 +35,10 @@ class HomeState extends State<HomePage> {
     String title = 'Welcome to Yahtzee!', body;
 
     games = <Yahtzee>[];
+    endedGameCount = 0;
 
-    for (int i = 1; i < 2; i++) {
-      games.add(yahtzeeGame('Player ' + i.toString()));
+    for (int i = 1; i < 10; i++) {
+      games.add(yahtzeeGame('Player ' + i.toString() + ' (Round ' + round.toString() + ')'));
     }
 
     body = games.map((Yahtzee game) => game.playerName).join(', ');
@@ -95,21 +98,16 @@ class HomeState extends State<HomePage> {
   onGameEnd(Yahtzee yahtzee) {
     print(yahtzee.playerName + ': ' + 'Game Over\n' + yahtzee.toString());
 
-    if (games.where((Yahtzee game) => game.gameOver).length >= games.length) {
+    if (++endedGameCount >= games.length) {
+      int i = 0;
+
       showNotification('Game Over!', 'All games have ended. Scores will be reported shortly.');
 
-      Timer.periodic(Duration(seconds: 3), reportYahtzeeScore);
-    }
-  }
+      games.forEach((Yahtzee yahtzee) => Timer(Duration(seconds: 3 * ++i), () => gameReport(yahtzee, yahtzee.score.toString())));
 
-  reportYahtzeeScore(Timer timer) {
-    Yahtzee yahtzee = games.removeLast();
+      round++;
 
-    gameReport(yahtzee, yahtzee.score.toString());
-
-    if (games.length < 1) {
-      Timer(Duration(seconds: 5), () => playYahtzee());
-      timer.cancel();
+      Timer(Duration(seconds: 5 + (3 * i)), playYahtzee);
     }
   }
 
