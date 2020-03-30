@@ -1,13 +1,15 @@
-import 'dart:async';
+import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:playing_around/src/games/Yahtzee.dart';
+import 'package:playing_around/src/games/YahtzeeController.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'presets_manager.dart';
 import 'index.dart';
 import 'preset_video_games.dart';
+
+yahtzeeControllerSpawnEntryPoint(Map<dynamic, dynamic> message) {}
 
 class HomePage extends StatefulWidget {
   @override
@@ -16,128 +18,14 @@ class HomePage extends StatefulWidget {
 
 class HomeState extends State<HomePage> {
   Database db;
-  List<Yahtzee> games;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-  int round = 1;
-  int endedGameCount;
 
   @override
   void initState() {
     setDatabase();
     initNotifications();
-
-    playYahtzee();
-
+    Isolate.spawn(yahtzeeControllerSpawnEntryPoint, {}).then((Isolate isolate) => YahtzeeController(showNotification, 2));
     super.initState();
-  }
-
-  playYahtzee() {
-    String title = 'Welcome to Yahtzee!', body;
-
-    games = <Yahtzee>[];
-    endedGameCount = 0;
-
-    for (int i = 1; i < 10; i++) {
-      games.add(yahtzeeGame('Player ' + i.toString() + ' (Round ' + round.toString() + ')'));
-    }
-
-    body = games.map((Yahtzee game) => game.playerName).join(', ');
-
-    print(title + ' ' + body);
-    showNotification(title, body);
-
-    Timer(Duration(seconds: 5), () => games.forEach((Yahtzee yahtzee) => yahtzee.play()));
-  }
-
-  Yahtzee yahtzeeGame(String name) {
-    return Yahtzee(
-      name,
-      // onRollSuccess: onRollSuccess,
-      // onRollFail: onRollFail,
-      // onRollAgain: onRollAgain,
-      // onTurnSuccess: onTurnSuccess,
-      // onTurnFail: onTurnFail,
-      onYahtzee: onYahtzee,
-      onBonusYahtzee: onBonusYahtzee,
-      onGameEnd: onGameEnd,
-    );
-  }
-
-  onRollSuccess(Yahtzee yahtzee) {
-    scoreSuccessReport(yahtzee, 'Roll Success: ');
-  }
-
-  onRollFail(Yahtzee yahtzee) {
-    allDiceReport(yahtzee, 'Roll Failed: ');
-  }
-
-  onRollAgain(Yahtzee yahtzee) {
-    gameReport(yahtzee, 'Roll Again, Keep ' + yahtzee.diceToKeep.toString() + ', Roll ' + yahtzee.diceToRoll.toString());
-  }
-
-  onTurnSuccess(Yahtzee yahtzee) {
-    scoreSuccessReport(yahtzee, 'Turn Success: ', lineBreak: true);
-  }
-
-  onTurnFail(Yahtzee yahtzee) {
-    allDiceReport(yahtzee, 'Turn Failed: ', lineBreak: true);
-  }
-
-  onYahtzee(Yahtzee yahtzee) {
-    yahtzeeReport(yahtzee);
-  }
-
-  onBonusYahtzee(Yahtzee yahtzee) {
-    yahtzeeReport(yahtzee, bonus: true);
-  }
-
-  yahtzeeReport(Yahtzee yahtzee, {bool bonus=false}) {
-    gameReport(yahtzee, (bonus ? 'Bonus ' : '') + 'Yahtzee of ' + yahtzee.allDice.first.value.toString() + 's (' + (bonus ? yahtzee.pickedYahtzeeBox.name + ', ' : '') + ((bonus && yahtzee.gotYahtzee ? 100 : 0) + yahtzee.pickedYahtzeeBox.score).toString() + ' pts)!');
-  }
-
-  onGameEnd(Yahtzee yahtzee) {
-    print(yahtzee.playerName + ': ' + 'Game Over\n' + yahtzee.toString());
-
-    if (++endedGameCount >= games.length) {
-      int i = 0;
-
-      showNotification('Game Over!', 'All games have ended. Scores will be reported shortly.');
-
-      games.forEach((Yahtzee yahtzee) => Timer(Duration(seconds: 3 * ++i), () => gameReport(yahtzee, yahtzee.score.toString())));
-
-      round++;
-
-      Timer(Duration(seconds: 5 + (3 * i)), playYahtzee);
-    }
-  }
-
-  scoreSuccessReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
-    gameReport(yahtzee, prefix + yahtzee.pickedYahtzeeBox.name + ' (' + yahtzee.pickedYahtzeeBox.score.toString() + ' pts)');
-  }
-
-  allDiceReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
-    gameReport(yahtzee, prefix + yahtzee.allDice.toString());
-  }
-
-  gameReport(Yahtzee yahtzee, String report, {bool lineBreak: false}) {
-    print(yahtzee.playerName + ': ' + report);
-
-    if (lineBreak) print('');
-
-    showNotification(yahtzee.playerName, report);
-  }
-
-  showNotification(String title, String report) async {
-    AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'Video Game', 'Video Game', 'An app for video chatting and AI game playing.',
-      importance: Importance.Max, priority: Priority.High, ticker: 'ticker'
-    );
-    IOSNotificationDetails iOSPlatformChannelSpecifics = IOSNotificationDetails();
-    NotificationDetails platformChannelSpecifics = NotificationDetails(androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-      0, title, report, platformChannelSpecifics,
-      payload: 'item x'
-    );
   }
 
   @override
@@ -173,14 +61,6 @@ class HomeState extends State<HomePage> {
     });
   }
 
-  initNotifications() async {
-    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
-    IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
-    InitializationSettings initializationSettings = InitializationSettings(initializationSettingsAndroid, initializationSettingsIOS);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  }
-
   startPresetVideoGame() {
     _addPage((context) => PresetVideoGames(db));
   }
@@ -199,6 +79,25 @@ class HomeState extends State<HomePage> {
       MaterialPageRoute(
         builder: builder,
       ),
+    );
+  }
+
+  initNotifications() async {
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+    InitializationSettings initializationSettings = InitializationSettings(initializationSettingsAndroid, IOSInitializationSettings());
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  showNotification(String title, String report) async {
+    AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'Video Game', 'Video Game', 'An app for video chatting and AI game playing.',
+      importance: Importance.Max, priority: Priority.High, ticker: 'ticker'
+    );
+    NotificationDetails platformChannelSpecifics = NotificationDetails(androidPlatformChannelSpecifics, IOSNotificationDetails());
+    await flutterLocalNotificationsPlugin.show(
+      0, title, report, platformChannelSpecifics,
+      payload: 'item x'
     );
   }
 }
