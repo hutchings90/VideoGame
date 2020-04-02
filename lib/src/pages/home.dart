@@ -59,11 +59,11 @@ class HomeState extends State<HomePage> {
   }
 
   startPresetVideoGame() {
-    _addPage((context) => PresetVideoGames(db, onJoin));
+    _addPage((context) => PresetVideoGames(db, joinPresetVideoGame));
   }
 
   startCustomVideoGame() {
-    _addPage((context) => IndexPage(db, 'Custom Video Game', onJoin));
+    _addPage((context) => IndexPage(db, 'Custom Video Game', joinCustomVideoGame));
   }
 
   managePresets() {
@@ -79,12 +79,20 @@ class HomeState extends State<HomePage> {
     );
   }
 
-  Future<void> onJoin(String channelName) async {
+  joinPresetVideoGame(Map<String, dynamic> videoGame) async {
+    onJoin(videoGame['name'], (await _contactsForVideoGame(videoGame)).toList());
+  }
+
+  joinCustomVideoGame(String channelName) {
+    onJoin(channelName, <Map<String, dynamic>>[]);
+  }
+
+  Future<void> onJoin(String channelName, List<Map<String, dynamic>> contacts) async {
     await _handleCameraAndMic();
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CallPage(channelName, <Map<String, String>>[]),
+        builder: (context) => CallPage(channelName, contacts),
       ),
     );
   }
@@ -93,5 +101,18 @@ class HomeState extends State<HomePage> {
     await PermissionHandler().requestPermissions(
       [PermissionGroup.camera, PermissionGroup.microphone],
     );
+  }
+
+  Future<List<Map<String, dynamic>>> _contactsForVideoGame(Map<String, dynamic> videoGame) async {
+    List<Map<String, dynamic>> videoGameContacts = await _videoGameContacts(videoGame['id']);
+    List<int> videoGameContactContactIds = videoGameContacts.map((Map<String, dynamic> videoGameContact) => videoGameContact['contact_id'] as int).toList();
+
+    return db.query(
+      'contact',
+      where: 'id in (' + videoGameContactContactIds.join(',') + ')');
+  }
+
+  Future<List<Map<String, dynamic>>> _videoGameContacts(int videoGameId) {
+    return db.query('video_game_contact', where: 'video_game_id=' + videoGameId.toString());
   }
 }
