@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:playing_around/src/pages/call.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'presets_manager.dart';
@@ -57,11 +59,11 @@ class HomeState extends State<HomePage> {
   }
 
   startPresetVideoGame() {
-    _addPage((context) => PresetVideoGames(db));
+    _addPage((context) => PresetVideoGames(db, onJoin));
   }
 
   startCustomVideoGame() {
-    _addPage((context) => IndexPage(db, 'Custom Video Game'));
+    _addPage((context) => IndexPage(db, 'Custom Video Game', onJoin));
   }
 
   managePresets() {
@@ -74,6 +76,24 @@ class HomeState extends State<HomePage> {
       MaterialPageRoute(
         builder: builder,
       ),
+    );
+  }
+
+  Future<void> onJoin(String callName) async {
+    await _handleCameraAndMic();
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CallPage(
+          channelName: callName,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleCameraAndMic() async {
+    await PermissionHandler().requestPermissions(
+      [PermissionGroup.camera, PermissionGroup.microphone],
     );
   }
 }
