@@ -1,7 +1,12 @@
 import 'dart:async';
+import 'dart:isolate';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:playing_around/src/games/YahtzeeController.dart';
 import '../utils/settings.dart';
+
+yahtzeeControllerSpawnEntryPoint(Map<dynamic, dynamic> message) {}
 
 class CallPage extends StatefulWidget {
   /// non-modifiable channel name of the page
@@ -18,6 +23,8 @@ class _CallPageState extends State<CallPage> {
   static final _users = <int>[];
   final _infoStrings = <String>[];
   bool muted = false;
+  YahtzeeController yahtzeeController;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   void dispose() {
@@ -26,14 +33,22 @@ class _CallPageState extends State<CallPage> {
     // destroy sdk
     AgoraRtcEngine.leaveChannel();
     AgoraRtcEngine.destroy();
+    yahtzeeController.stop();
     super.dispose();
   }
 
   @override
   void initState() {
+    initNotifications();
+    Isolate.spawn(yahtzeeControllerSpawnEntryPoint, {}).then(startYahtzee);
     super.initState();
     // initialize agora sdk
     initialize();
+  }
+
+  startYahtzee(Isolate isolate) {
+    yahtzeeController = YahtzeeController(showNotification, 2);
+    yahtzeeController.start();
   }
 
   Future<void> initialize() async {
@@ -309,6 +324,25 @@ class _CallPageState extends State<CallPage> {
           ],
         ),
       ),
+    );
+  }
+
+  initNotifications() async {
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+    InitializationSettings initializationSettings = InitializationSettings(initializationSettingsAndroid, IOSInitializationSettings());
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  showNotification(String title, String report) async {
+    AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
+      'Video Game', 'Video Game', 'An app for video chatting and AI game playing.',
+      importance: Importance.Max, priority: Priority.High, ticker: 'ticker'
+    );
+    NotificationDetails platformChannelSpecifics = NotificationDetails(androidPlatformChannelSpecifics, IOSNotificationDetails());
+    await flutterLocalNotificationsPlugin.show(
+      0, title, report, platformChannelSpecifics,
+      payload: 'item x'
     );
   }
 }

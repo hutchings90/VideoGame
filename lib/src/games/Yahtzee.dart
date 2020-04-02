@@ -19,6 +19,7 @@ class Yahtzee {
   List<Die> _diceToRoll = <Die>[Die(), Die(), Die(), Die(), Die()];
   List<Die> _diceToKeep = <Die>[];
   YahtzeeBox _pickedYahtzeeBox;
+  Timer _turnTimer, _rollTimer;
 
   final String playerName;
   final Function(Yahtzee yahtzee) onRollSuccess, onRollFail, onRollAgain, onTurnSuccess, onTurnFail, onYahtzee, onBonusYahtzee, onGameEnd;
@@ -101,7 +102,7 @@ class Yahtzee {
     ].join('\n');
   }
 
-  play() async {
+  start() async {
     _initPlay();
     _takeTurn();
   }
@@ -170,10 +171,6 @@ class Yahtzee {
     _turnOver ? _processTurn() : _nextRoll();
   }
 
-  _nextRoll() {
-    Timer(Duration(seconds: ROLL_DELAY), () => _roll());
-  }
-
   _processTurn() {
     _reportTurn();
     _endTurn();
@@ -202,6 +199,15 @@ class Yahtzee {
   }
 
   _nextTurn() {
-    Timer(Duration(seconds: TURN_DELAY), () => _takeTurn());
+    _turnTimer = Timer(Duration(seconds: TURN_DELAY), () => _takeTurn());
+  }
+
+  _nextRoll() {
+    _rollTimer = Timer(Duration(seconds: ROLL_DELAY), () => _roll());
+  }
+
+  stop() {
+    if (_turnTimer != null) _turnTimer.cancel();
+    if (_rollTimer != null) _rollTimer.cancel();
   }
 }

@@ -3,33 +3,40 @@ import 'dart:async';
 import 'package:playing_around/src/games/Yahtzee.dart';
 
 class YahtzeeController {
-  List<Yahtzee> games;
-  int round = 1;
-  int endedGameCount;
+  List<Yahtzee> _games;
+  int _endedGameCount;
+  Timer _startTimer;
+  List<Timer> _gameReportTimers = <Timer>[];
 
   final int playerCount;
   final Function showNotification;
 
-  YahtzeeController(this.showNotification, this.playerCount) {
-    start();
-  }
+  YahtzeeController(this.showNotification, this.playerCount);
 
   start() {
     String title = 'Welcome to Yahtzee!', body;
 
-    games = <Yahtzee>[];
-    endedGameCount = 0;
+    _games = <Yahtzee>[];
+    _endedGameCount = 0;
 
     for (int i = 1; i <= playerCount; i++) {
-      games.add(yahtzeeGame('Player ' + i.toString() + ' (Round ' + round.toString() + ')'));
+      _games.add(yahtzeeGame('Player ' + i.toString()));
     }
 
-    body = games.map((Yahtzee game) => game.playerName).join(', ');
+    body = _games.map((Yahtzee game) => game.playerName).join(', ');
 
     print(title + ' ' + body);
     showNotification(title, body);
 
-    Timer(Duration(seconds: 5), () => games.forEach((Yahtzee yahtzee) => yahtzee.play()));
+    _startTimer = Timer(Duration(seconds: 5), () => _games.forEach((Yahtzee yahtzee) => yahtzee.start()));
+  }
+
+  stop() {
+    if (_startTimer != null) _startTimer.cancel();
+
+    _gameReportTimers.forEach((Timer timer) => timer.cancel());
+
+    _games.forEach((Yahtzee game) => game.stop());
   }
 
   Yahtzee yahtzeeGame(String name) {
@@ -81,17 +88,19 @@ class YahtzeeController {
   onGameEnd(Yahtzee yahtzee) {
     print(yahtzee.playerName + ': ' + 'Game Over\n' + yahtzee.toString());
 
-    if (++endedGameCount >= games.length) {
+    if (++_endedGameCount >= _games.length) {
       int i = 0;
 
       showNotification('Game Over!', 'All games have ended. Scores will be reported shortly.');
 
-      games.forEach((Yahtzee yahtzee) => Timer(Duration(seconds: 3 * ++i), () => gameReport(yahtzee, yahtzee.score.toString())));
+      _gameReportTimers = <Timer>[];
 
-      round++;
-
-      Timer(Duration(seconds: 5 + (3 * i)), start);
+      _games.forEach((Yahtzee yahtzee) => _gameReportTimers.add(Timer(Duration(seconds: 3 * ++i), () => endGameReport(yahtzee))));
     }
+  }
+
+  endGameReport(Yahtzee yahtzee) {
+    gameReport(yahtzee, yahtzee.score.toString());
   }
 
   scoreSuccessReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
