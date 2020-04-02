@@ -11,9 +11,10 @@ yahtzeeControllerSpawnEntryPoint(Map<dynamic, dynamic> message) {}
 class CallPage extends StatefulWidget {
   /// non-modifiable channel name of the page
   final String channelName;
+  final List<Map<String, dynamic>> contacts;
 
   /// Creates a call page with given channel name.
-  const CallPage({Key key, this.channelName}) : super(key: key);
+  const CallPage(this.channelName, this.contacts, {Key key}) : super(key: key);
 
   @override
   _CallPageState createState() => _CallPageState();

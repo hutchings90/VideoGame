@@ -79,14 +79,12 @@ class HomeState extends State<HomePage> {
     );
   }
 
-  Future<void> onJoin(String callName) async {
+  Future<void> onJoin(String channelName) async {
     await _handleCameraAndMic();
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CallPage(
-          channelName: callName,
-        ),
+        builder: (context) => CallPage(channelName, <Map<String, String>>[]),
       ),
     );
   }

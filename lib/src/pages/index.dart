@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 class IndexPage extends StatefulWidget {
   final Database db;
   final String callName;
-  final Function(String callName) onJoin;
+  final Function(String channelName) onJoin;
 
   IndexPage(this.db, this.callName, this.onJoin, { Key key }) : super(key: key);
 
@@ -20,7 +20,7 @@ class IndexState extends State<IndexPage> {
         title: Text('Agora Flutter QuickStart'),
       ),
       body: RaisedButton(
-        onPressed: () => widget.onJoin(widget.callName),
+        onPressed: () => widget.onJoin('Yahtzee'),
         child: Text('Start'),
         color: Colors.blueAccent,
         textColor: Colors.white,
