@@ -14,17 +14,10 @@ class YahtzeeController {
   YahtzeeController(this.showNotification, this.players);
 
   start() {
-    String title = 'Welcome to Yahtzee!', body;
-
-    _games = <Yahtzee>[];
     _endedGameCount = 0;
+    _games = players.map((Map<String, dynamic> player) => yahtzeeGame(player));
 
-    players.forEach((Map<String, dynamic> player) => _games.add(yahtzeeGame(player)));
-
-    body = _games.map((Yahtzee game) => game.player['first_name']).join(', ');
-
-    print(title + ' ' + body);
-    showNotification(title, body);
+    showNotification('Welcome to Yahtzee!', _games.map((Yahtzee game) => game.player['first_name']).join(', '));
 
     _startTimer = Timer(Duration(seconds: 5), () => _games.forEach((Yahtzee yahtzee) => yahtzee.start()));
   }
@@ -84,15 +77,15 @@ class YahtzeeController {
   }
 
   onGameEnd(Yahtzee yahtzee) {
-    if (++_endedGameCount >= _games.length) {
-      int i = 0;
+    if (++_endedGameCount < _games.length) return;
 
-      showNotification('Game Over!', 'All games have ended. Scores will be reported shortly.');
+    int i = 0;
 
-      _gameReportTimers = <Timer>[];
+    showNotification('Game Over!', 'All games have ended. Scores will be reported shortly.');
 
-      _games.forEach((Yahtzee yahtzee) => _gameReportTimers.add(Timer(Duration(seconds: 3 * ++i), () => endGameReport(yahtzee))));
-    }
+    _gameReportTimers = <Timer>[];
+
+    _games.forEach((Yahtzee yahtzee) => _gameReportTimers.add(Timer(Duration(seconds: 3 * ++i), () => endGameReport(yahtzee))));
   }
 
   endGameReport(Yahtzee yahtzee) {
