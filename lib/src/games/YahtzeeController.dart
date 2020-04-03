@@ -8,10 +8,10 @@ class YahtzeeController {
   Timer _startTimer;
   List<Timer> _gameReportTimers = <Timer>[];
 
-  final int playerCount;
+  final List<Map<String, dynamic>> players;
   final Function showNotification;
 
-  YahtzeeController(this.showNotification, this.playerCount);
+  YahtzeeController(this.showNotification, this.players);
 
   start() {
     String title = 'Welcome to Yahtzee!', body;
@@ -19,11 +19,9 @@ class YahtzeeController {
     _games = <Yahtzee>[];
     _endedGameCount = 0;
 
-    for (int i = 1; i <= playerCount; i++) {
-      _games.add(yahtzeeGame('Player ' + i.toString()));
-    }
+    players.forEach((Map<String, dynamic> player) => _games.add(yahtzeeGame(player)));
 
-    body = _games.map((Yahtzee game) => game.playerName).join(', ');
+    body = _games.map((Yahtzee game) => game.player['first_name']).join(', ');
 
     print(title + ' ' + body);
     showNotification(title, body);
@@ -39,9 +37,9 @@ class YahtzeeController {
     _games.forEach((Yahtzee game) => game.stop());
   }
 
-  Yahtzee yahtzeeGame(String name) {
+  Yahtzee yahtzeeGame(Map<String, dynamic> player) {
     return Yahtzee(
-      name,
+      player,
       // onRollSuccess: onRollSuccess,
       // onRollFail: onRollFail,
       // onRollAgain: onRollAgain,
@@ -66,11 +64,11 @@ class YahtzeeController {
   }
 
   onTurnSuccess(Yahtzee yahtzee) {
-    scoreSuccessReport(yahtzee, 'Turn Success: ', lineBreak: true);
+    scoreSuccessReport(yahtzee, 'Turn Success: ');
   }
 
   onTurnFail(Yahtzee yahtzee) {
-    allDiceReport(yahtzee, 'Turn Failed: ', lineBreak: true);
+    allDiceReport(yahtzee, 'Turn Failed: ');
   }
 
   onYahtzee(Yahtzee yahtzee) {
@@ -86,8 +84,6 @@ class YahtzeeController {
   }
 
   onGameEnd(Yahtzee yahtzee) {
-    print(yahtzee.playerName + ': ' + 'Game Over\n' + yahtzee.toString());
-
     if (++_endedGameCount >= _games.length) {
       int i = 0;
 
@@ -103,19 +99,15 @@ class YahtzeeController {
     gameReport(yahtzee, yahtzee.score.toString());
   }
 
-  scoreSuccessReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
+  scoreSuccessReport(Yahtzee yahtzee, String prefix) {
     gameReport(yahtzee, prefix + yahtzee.pickedYahtzeeBox.name + ' (' + yahtzee.pickedYahtzeeBox.score.toString() + ' pts)');
   }
 
-  allDiceReport(Yahtzee yahtzee, String prefix, {bool lineBreak: false}) {
+  allDiceReport(Yahtzee yahtzee, String prefix) {
     gameReport(yahtzee, prefix + yahtzee.allDice.toString());
   }
 
-  gameReport(Yahtzee yahtzee, String report, {bool lineBreak: false}) {
-    print(yahtzee.playerName + ': ' + report);
-
-    if (lineBreak) print('');
-
-    showNotification(yahtzee.playerName, report);
+  gameReport(Yahtzee yahtzee, String report) {
+    showNotification(yahtzee.player['first_name'], report);
   }
 }

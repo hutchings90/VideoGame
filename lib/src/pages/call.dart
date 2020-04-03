@@ -40,7 +40,6 @@ class _CallPageState extends State<CallPage> {
 
   @override
   void initState() {
-    print(widget.contacts);
     initNotifications();
     Isolate.spawn(yahtzeeControllerSpawnEntryPoint, {}).then(startYahtzee);
     super.initState();
@@ -49,7 +48,7 @@ class _CallPageState extends State<CallPage> {
   }
 
   startYahtzee(Isolate isolate) {
-    yahtzeeController = YahtzeeController(showNotification, 2);
+    yahtzeeController = YahtzeeController(showNotification, widget.contacts);
     yahtzeeController.start();
   }
 

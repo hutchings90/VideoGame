@@ -21,10 +21,10 @@ class Yahtzee {
   YahtzeeBox _pickedYahtzeeBox;
   Timer _turnTimer, _rollTimer;
 
-  final String playerName;
+  final Map<String, dynamic> player;
   final Function(Yahtzee yahtzee) onRollSuccess, onRollFail, onRollAgain, onTurnSuccess, onTurnFail, onYahtzee, onBonusYahtzee, onGameEnd;
 
-  Yahtzee(this.playerName, {this.onRollSuccess, this.onTurnSuccess, this.onYahtzee, this.onBonusYahtzee, this.onRollFail, this.onTurnFail, this.onRollAgain, this.onGameEnd});
+  Yahtzee(this.player, {this.onRollSuccess, this.onTurnSuccess, this.onYahtzee, this.onBonusYahtzee, this.onRollFail, this.onTurnFail, this.onRollAgain, this.onGameEnd});
 
   int get score => _top.score + _bottom.score + _bonusYahtzeeScore;
 
