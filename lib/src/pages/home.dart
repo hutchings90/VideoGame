@@ -83,8 +83,8 @@ class HomeState extends State<HomePage> {
     onJoin(videoGame['name'], (await _contactsForVideoGame(videoGame)).toList());
   }
 
-  joinCustomVideoGame(String channelName) {
-    onJoin(channelName, <Map<String, dynamic>>[]);
+  joinCustomVideoGame(String channelName, List<Map<String, dynamic>> contacts) {
+    onJoin(channelName, contacts);
   }
 
   Future<void> onJoin(String channelName, List<Map<String, dynamic>> contacts) async {

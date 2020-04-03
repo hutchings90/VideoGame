@@ -22,7 +22,7 @@ class Yahtzee {
   Timer _turnTimer, _rollTimer;
 
   final Map<String, dynamic> player;
-  final Function(Yahtzee yahtzee) onRollSuccess, onRollFail, onRollAgain, onTurnSuccess, onTurnFail, onYahtzee, onBonusYahtzee, onGameEnd;
+  final Function(Yahtzee) onRollSuccess, onRollFail, onRollAgain, onTurnSuccess, onTurnFail, onYahtzee, onBonusYahtzee, onGameEnd;
 
   Yahtzee(this.player, {this.onRollSuccess, this.onTurnSuccess, this.onYahtzee, this.onBonusYahtzee, this.onRollFail, this.onTurnFail, this.onRollAgain, this.onGameEnd});
 

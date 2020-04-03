@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 class PresetVideoGames extends StatefulWidget {
   final Database db;
-  final Function(Map<String, dynamic> videoGame) onJoin;
+  final Function(Map<String, dynamic>) onJoin;
 
   PresetVideoGames(this.db, this.onJoin, { Key key }) : super(key: key);
 

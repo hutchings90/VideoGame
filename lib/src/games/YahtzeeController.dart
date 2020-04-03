@@ -15,7 +15,7 @@ class YahtzeeController {
 
   start() {
     _endedGameCount = 0;
-    _games = players.map((Map<String, dynamic> player) => yahtzeeGame(player));
+    _games = players.map((Map<String, dynamic> player) => yahtzeeGame(player)).toList();
 
     showNotification('Welcome to Yahtzee!', _games.map((Yahtzee game) => game.player['first_name']).join(', '));
 
