@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:playing_around/src/games/YahtzeeController.dart';
 import '../utils/settings.dart';
@@ -26,6 +27,7 @@ class _CallPageState extends State<CallPage> {
   bool muted = false;
   YahtzeeController yahtzeeController;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  MethodChannel _smsChannel = const MethodChannel('sendSms');
 
   @override
   void dispose() {
@@ -48,7 +50,7 @@ class _CallPageState extends State<CallPage> {
   }
 
   startYahtzee(Isolate isolate) {
-    yahtzeeController = YahtzeeController(showNotification, widget.contacts);
+    yahtzeeController = YahtzeeController(widget.contacts, showNotification, sendText);
     yahtzeeController.start();
   }
 
@@ -335,7 +337,7 @@ class _CallPageState extends State<CallPage> {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
-  showNotification(String title, String report) async {
+  Future<void> showNotification(String title, String report) async {
     AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'Video Game', 'Video Game', 'An app for video chatting and AI game playing.',
       importance: Importance.Max, priority: Priority.High, ticker: 'ticker'
@@ -345,5 +347,15 @@ class _CallPageState extends State<CallPage> {
       0, title, report, platformChannelSpecifics,
       payload: 'item x'
     );
+  }
+
+  sendText(String message, List<Map<String, dynamic>> contacts) {
+    return;
+    contacts.forEach((Map<String, dynamic> contact) async {
+      await _smsChannel.invokeMethod('send', <String, dynamic>{
+        'phone': '+19' + contact['phone_number'],
+        'msg': message
+      });
+    });
   }
 }

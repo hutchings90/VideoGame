@@ -88,7 +88,7 @@ class HomeState extends State<HomePage> {
   }
 
   Future<void> onJoin(String channelName, List<Map<String, dynamic>> contacts) async {
-    await _handleCameraAndMic();
+    await _requestCallPermissions();
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -97,9 +97,9 @@ class HomeState extends State<HomePage> {
     );
   }
 
-  Future<void> _handleCameraAndMic() async {
+  Future<void> _requestCallPermissions() async {
     await PermissionHandler().requestPermissions(
-      [PermissionGroup.camera, PermissionGroup.microphone],
+      [PermissionGroup.camera, PermissionGroup.microphone, PermissionGroup.sms],
     );
   }
 

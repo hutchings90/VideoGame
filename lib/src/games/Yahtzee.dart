@@ -9,8 +9,8 @@ import 'package:playing_around/src/games/YahtzeeYahtzeeBox.dart';
 
 class Yahtzee {
   static const int BONUS_YAHTZEE_SCORE = 100;
-  static const int ROLL_DELAY = 0;
-  static const int TURN_DELAY = 0;
+  static const int ROLL_DELAY = 2;
+  static const int TURN_DELAY = 1;
   static const int ROLLS_PER_TURN = 3;
 
   int _turnCount, _rollCount;
@@ -22,9 +22,9 @@ class Yahtzee {
   Timer _turnTimer, _rollTimer;
 
   final Map<String, dynamic> player;
-  final Function(Yahtzee) onRollSuccess, onRollFail, onRollAgain, onTurnSuccess, onTurnFail, onYahtzee, onBonusYahtzee, onGameEnd;
+  final Function(Yahtzee) onYahtzee, onBonusYahtzee, onGameEnd;
 
-  Yahtzee(this.player, {this.onRollSuccess, this.onTurnSuccess, this.onYahtzee, this.onBonusYahtzee, this.onRollFail, this.onTurnFail, this.onRollAgain, this.onGameEnd});
+  Yahtzee(this.player, {this.onYahtzee, this.onBonusYahtzee, this.onGameEnd});
 
   int get score => _top.score + _bottom.score + _bonusYahtzeeScore;
 
@@ -126,7 +126,6 @@ class Yahtzee {
   _roll() {
     _rollDice();
     _processRoll();
-    _reportRoll();
     _endRoll();
   }
 
@@ -157,16 +156,6 @@ class Yahtzee {
     _pickedYahtzeeBox.use(allDice, asBonusYahtzee: _rolledYahtzee && usedYahtzee);
   }
 
-  _reportRoll() {
-    if (!_turnOver) {
-      if (onRollAgain != null) onRollAgain(this);
-    }
-    else if (_rollSucceeded) {
-      if (onRollSuccess != null) onRollSuccess(this);
-    }
-    else if (onRollFail != null) onRollFail(this);
-  }
-
   _endRoll() {
     _turnOver ? _processTurn() : _nextRoll();
   }
@@ -178,8 +167,6 @@ class Yahtzee {
 
   _reportTurn() {
     if (_rollSucceeded) {
-      if (onTurnSuccess != null) onTurnSuccess(this);
-
       if (_pickedYahtzeeBox.runtimeType == YahtzeeYahtzeeBox) {
         if (onYahtzee != null) onYahtzee(this);
       }
@@ -187,7 +174,6 @@ class Yahtzee {
         if (onBonusYahtzee != null) onBonusYahtzee(this);
       }
     }
-    else if (onTurnFail != null) onTurnFail(this);
   }
 
   _endTurn() {

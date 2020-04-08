@@ -9,15 +9,17 @@ class YahtzeeController {
   List<Timer> _gameReportTimers = <Timer>[];
 
   final List<Map<String, dynamic>> players;
-  final Function showNotification;
+  final Future<void> Function(String, String) showNotification;
+  final Function(String, List<Map<String, dynamic>>) sendText;
 
-  YahtzeeController(this.showNotification, this.players);
+  YahtzeeController(this.players, this.showNotification, this.sendText);
 
   start() {
     _endedGameCount = 0;
     _games = players.map((Map<String, dynamic> player) => yahtzeeGame(player)).toList();
 
     showNotification('Welcome to Yahtzee!', _games.map((Yahtzee game) => game.player['first_name']).join(', '));
+    _textAllUsers('Welcome to Yahtzee!' + '\n' + _games.map((Yahtzee game) => game.player['first_name']).join(', '));
 
     _startTimer = Timer(Duration(seconds: 5), () => _games.forEach((Yahtzee yahtzee) => yahtzee.start()));
   }
@@ -33,74 +35,63 @@ class YahtzeeController {
   Yahtzee yahtzeeGame(Map<String, dynamic> player) {
     return Yahtzee(
       player,
-      // onRollSuccess: onRollSuccess,
-      // onRollFail: onRollFail,
-      // onRollAgain: onRollAgain,
-      // onTurnSuccess: onTurnSuccess,
-      // onTurnFail: onTurnFail,
       onYahtzee: onYahtzee,
       onBonusYahtzee: onBonusYahtzee,
       onGameEnd: onGameEnd,
     );
   }
 
-  onRollSuccess(Yahtzee yahtzee) {
-    scoreSuccessReport(yahtzee, 'Roll Success: ');
-  }
-
-  onRollFail(Yahtzee yahtzee) {
-    allDiceReport(yahtzee, 'Roll Failed: ');
-  }
-
-  onRollAgain(Yahtzee yahtzee) {
-    gameReport(yahtzee, 'Roll Again, Keep ' + yahtzee.diceToKeep.toString() + ', Roll ' + yahtzee.diceToRoll.toString());
-  }
-
-  onTurnSuccess(Yahtzee yahtzee) {
-    scoreSuccessReport(yahtzee, 'Turn Success: ');
-  }
-
-  onTurnFail(Yahtzee yahtzee) {
-    allDiceReport(yahtzee, 'Turn Failed: ');
-  }
-
   onYahtzee(Yahtzee yahtzee) {
-    yahtzeeReport(yahtzee);
+    _yahtzeeReport(yahtzee);
   }
 
   onBonusYahtzee(Yahtzee yahtzee) {
-    yahtzeeReport(yahtzee, bonus: true);
+    _yahtzeeReport(yahtzee, bonus: true);
   }
 
-  yahtzeeReport(Yahtzee yahtzee, {bool bonus=false}) {
-    gameReport(yahtzee, (bonus ? 'Bonus ' : '') + 'Yahtzee of ' + yahtzee.allDice.first.value.toString() + 's (' + (bonus ? yahtzee.pickedYahtzeeBox.name + ', ' : '') + ((bonus && yahtzee.gotYahtzee ? 100 : 0) + yahtzee.pickedYahtzeeBox.score).toString() + ' pts)!');
+  _yahtzeeReport(Yahtzee yahtzee, {bool bonus=false}) {
+    String report = (bonus ? 'Bonus ' : '') + 'Yahtzee of ' + yahtzee.allDice.first.value.toString() + 's (' + (bonus ? yahtzee.pickedYahtzeeBox.name + ', ' : '') + ((bonus && yahtzee.gotYahtzee ? 100 : 0) + yahtzee.pickedYahtzeeBox.score).toString() + ' points)!';
+
+    showNotification(yahtzee.player['first_name'], report);
+    _textUser(report, yahtzee.player);
   }
 
   onGameEnd(Yahtzee yahtzee) {
     if (++_endedGameCount < _games.length) return;
 
+    _endGameReportNotifications();
+    _endGameReportTexts();
+  }
+
+  _endGameReportNotifications() {
     int i = 0;
 
     showNotification('Game Over!', 'All games have ended. Scores will be reported shortly.');
 
     _gameReportTimers = <Timer>[];
 
-    _games.forEach((Yahtzee yahtzee) => _gameReportTimers.add(Timer(Duration(seconds: 3 * ++i), () => endGameReport(yahtzee))));
+    _games.forEach((Yahtzee yahtzee) => _gameReportTimers.add(Timer(Duration(seconds: 3 * ++i), () => showNotification(yahtzee.player['first_name'], _yahtzeeScoreReport(yahtzee)))));
   }
 
-  endGameReport(Yahtzee yahtzee) {
-    gameReport(yahtzee, yahtzee.score.toString());
+  _endGameReportTexts() {
+    _games.forEach((Yahtzee yahtzee) => _textUser('Game over!\n' + _yahtzeeScoreReport(yahtzee), yahtzee.player));
   }
 
-  scoreSuccessReport(Yahtzee yahtzee, String prefix) {
-    gameReport(yahtzee, prefix + yahtzee.pickedYahtzeeBox.name + ' (' + yahtzee.pickedYahtzeeBox.score.toString() + ' pts)');
+  _yahtzeeScoreReport(Yahtzee yahtzee) {
+    int exclamationMarkCount = yahtzee.score ~/ 100;
+
+    return 'You scored ' + yahtzee.score.toString() + ' points' + (exclamationMarkCount > 0 ? ''.padLeft(exclamationMarkCount, '!') : '.');
   }
 
-  allDiceReport(Yahtzee yahtzee, String prefix) {
-    gameReport(yahtzee, prefix + yahtzee.allDice.toString());
+  _textAllUsers(String message) {
+    _textUsers(message, _games.map((Yahtzee game) => game.player).toList());
   }
 
-  gameReport(Yahtzee yahtzee, String report) {
-    showNotification(yahtzee.player['first_name'], report);
+  _textUser(String message, Map<String, dynamic> contact) {
+    _textUsers(message, <Map<String, dynamic>>[ contact ]);
+  }
+
+  _textUsers(String message, List<Map<String, dynamic>> contacts) {
+    sendText(message, contacts);
   }
 }
