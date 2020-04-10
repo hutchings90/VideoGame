@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:isolate';
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:playing_around/src/games/YahtzeeController.dart';
 import '../utils/settings.dart';
@@ -25,9 +24,9 @@ class _CallPageState extends State<CallPage> {
   static final _users = <int>[];
   final _infoStrings = <String>[];
   bool muted = false;
-  YahtzeeController yahtzeeController;
+  YahtzeeController _yahtzeeController;
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-  MethodChannel _smsChannel = const MethodChannel('sendSms');
+  DateTime _startTs, _endTs;
 
   @override
   void dispose() {
@@ -36,7 +35,7 @@ class _CallPageState extends State<CallPage> {
     // destroy sdk
     AgoraRtcEngine.leaveChannel();
     AgoraRtcEngine.destroy();
-    yahtzeeController.stop();
+    _yahtzeeController.stop();
     super.dispose();
   }
 
@@ -50,16 +49,15 @@ class _CallPageState extends State<CallPage> {
   }
 
   startYahtzee(Isolate isolate) {
-    yahtzeeController = YahtzeeController(widget.contacts, showNotification, sendText);
-    yahtzeeController.start();
+    _yahtzeeController = YahtzeeController(widget.contacts, showNotification, onGamesOver);
+    _startTs = DateTime.now();
+    _yahtzeeController.start();
   }
 
   Future<void> initialize() async {
     if (APP_ID.isEmpty) {
       setState(() {
-        _infoStrings.add(
-          'APP_ID missing, please provide your APP_ID in settings.dart',
-        );
+        _infoStrings.add('APP_ID missing, please provide your APP_ID in settings.dart');
         _infoStrings.add('Agora Engine is not starting');
       });
       return;
@@ -81,23 +79,13 @@ class _CallPageState extends State<CallPage> {
 
   /// Add agora event handlers
   void _addAgoraEventHandlers() {
-    AgoraRtcEngine.onError = (dynamic code) {
-      setState(() {
-        final info = 'onError: $code';
-        _infoStrings.add(info);
-      });
-    };
+    AgoraRtcEngine.onError = (dynamic code) {};
 
     AgoraRtcEngine.onJoinChannelSuccess = (
       String channel,
       int uid,
       int elapsed,
-    ) {
-      setState(() {
-        final info = 'onJoinChannel: $channel, uid: $uid';
-        _infoStrings.add(info);
-      });
-    };
+    ) {};
 
     AgoraRtcEngine.onLeaveChannel = () {
       setState(() {
@@ -249,7 +237,7 @@ class _CallPageState extends State<CallPage> {
   /// Info panel to show logs
   Widget _panel() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 48),
+      padding: const EdgeInsets.symmetric(vertical: 65),
       alignment: Alignment.bottomCenter,
       child: FractionallySizedBox(
         heightFactor: 0.5,
@@ -281,7 +269,7 @@ class _CallPageState extends State<CallPage> {
                           borderRadius: BorderRadius.circular(5),
                         ),
                         child: Text(
-                          _infoStrings[index],
+                          _infoStrings[_infoStrings.length - 1 - index],
                           style: TextStyle(color: Colors.blueGrey),
                         ),
                       ),
@@ -315,7 +303,7 @@ class _CallPageState extends State<CallPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Agora Flutter QuickStart'),
+        title: Text(widget.channelName),
       ),
       backgroundColor: Colors.black,
       body: Center(
@@ -349,13 +337,14 @@ class _CallPageState extends State<CallPage> {
     );
   }
 
-  sendText(String message, List<Map<String, dynamic>> contacts) {
-    return;
-    contacts.forEach((Map<String, dynamic> contact) async {
-      await _smsChannel.invokeMethod('send', <String, dynamic>{
-        'phone': '+19' + contact['phone_number'],
-        'msg': message
-      });
-    });
+  onGamesOver() {
+    _endTs = DateTime.now();
+
+    setState(() => _infoStrings.add(
+      'Low Score: ' + _yahtzeeController.lowScore.toString()
+      + '\nHigh Score: ' + _yahtzeeController.highScore.toString()
+      + '\nAverage Score: ' + _yahtzeeController.averageScore.toString()
+      + '\nTotal Time: ' + _endTs.difference(_startTs).toString()
+    ));
   }
 }

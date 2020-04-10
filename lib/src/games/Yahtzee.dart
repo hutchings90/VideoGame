@@ -9,8 +9,8 @@ import 'package:playing_around/src/games/YahtzeeYahtzeeBox.dart';
 
 class Yahtzee {
   static const int BONUS_YAHTZEE_SCORE = 100;
-  static const int ROLL_DELAY = 2;
-  static const int TURN_DELAY = 1;
+  static const int ROLL_DELAY = 5;
+  static const int TURN_DELAY = 2;
   static const int ROLLS_PER_TURN = 3;
 
   int _turnCount, _rollCount;
